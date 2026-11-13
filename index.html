@@ -384,6 +384,12 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .favbtn:focus-visible,.fname:focus-visible{outline:2px solid #fff;outline-offset:2px;border-radius:8px}
 .inp{all:unset;box-sizing:border-box;width:100%;min-height:48px;padding:0 14px;border-radius:12px;background:rgba(0,16,48,.75);border:2px solid rgba(127,227,255,.45);font-size:17px;font-weight:600;color:#fff}
 .inp::placeholder{color:rgba(255,255,255,.45)}
+.avstack{display:inline-flex;align-items:center;flex:none}
+.avstack>*{margin-left:-10px}.avstack>*:first-child{margin-left:0}
+.avstack .more{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#0B2A5A;border:2px solid #10336A;font-size:11px;font-weight:700}
+.cilist{display:flex;flex-direction:column;gap:6px;max-height:40vh;overflow:auto}
+.cirow{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:12px;background:rgba(0,16,48,.45);cursor:pointer;font-weight:600}
+.cirow input{width:20px;height:20px;accent-color:#00B72D}
 /* iconos 3D */
 img.medal{object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,.35))}
 img.medal.dim{filter:grayscale(1) brightness(.75) drop-shadow(0 3px 4px rgba(0,0,0,.3));opacity:.75}
@@ -817,6 +823,7 @@ function renderPerfil(){
     '<div class="row" style="justify-content:space-between;font-size:13px;margin-top:4px"><b style="color:var(--gold)">'+d.name+' · '+fmt(S.prestige)+' de prestigio</b><span class="small">'+(d.next?'faltan '+fmt(d.left)+' para '+d.next:'división máxima')+'</span></div></div></div>';
   h+='<div class="grid2"><div><b>'+fmt(st.duels)+'</b><span>Duelos jugados</span></div><div><b>'+Math.round(st.wins/Math.max(1,st.duels)*100)+' %</b><span>Victorias</span></div><div><b>'+st.best+'</b><span>Mejor racha</span></div><div><b>4,8</b><span>Deportividad (stickers recibidos)</span></div></div>';
   h+=friendsHtml();
+  h+=circlesHtml();
   h+='<div class="sec"><span>Récords</span></div><div class="grid2">'+GKEYS.map(function(k){return '<div class="rec"><img src="'+IMG[k]+'" alt=""><div><span>'+GAMES[k].short+'</span><b style="font-size:20px">'+fmt(S.record[k]||0)+'</b></div></div>';}).join('')+'</div>';
   h+='<div class="sec"><span>Vitrina</span></div><div class="troph"><div>'+medal3('trofeo')+'Copa diaria ×12</div><div>'+medal3('liga')+'Liga Oro</div><div>'+medal3('racha')+'Racha de '+st.best+'</div><div>'+medal3('medalla')+'Semifinal semanal</div></div>';
   h+='<a class="mc w" href="#tienda" style="min-height:0;color:#fff">'+medal3('album')+'<span class="mid"><span class="mt"><b>Álbum de stickers</b></span>'+bar(owned,40)+'</span><span class="cta">Tienda</span></a>';
@@ -861,20 +868,20 @@ function shareModal(title,text,url,first){
 function copyText(t){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast('Enlace copiado');},function(){fallbackCopy(t);});}else fallbackCopy(t);}
 function fallbackCopy(t){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('Enlace copiado');}catch(e){toast('No se ha podido copiar');}a.remove();}
 function sendReto(){
-  if(!ctx||!ctx.result||!ctx.seed)return;var g=current,sc=ctx.result.score,seed=ctx.seed,fk=ctx.forFriend,fr=fk&&S.friends&&S.friends[fk];
+  if(!ctx||!ctx.result||!ctx.seed)return;var g=current,sc=ctx.result.score,seed=ctx.seed,fk=ctx.forFriend,fr=fk&&S.friends&&S.friends[fk],cc=ctx.forCircle&&circles()[ctx.forCircle];
   needAlias(function(){
     var id=rid(),me=myAlias();
     retos().unshift({key:'o_'+id,id:id,dir:'out',g:g,seed:seed,mine:sc,t:Date.now(),ans:[]});if(S.retos.length>30)S.retos.length=30;save();
-    var url=baseUrl()+'#reto='+enc({v:1,id:id,g:g,seed:seed,n:me,s:sc,a:S.avatar||''});
-    var txt=(fr?fr.n+', ':'')+me+' te reta en '+GAMES[g].short+': '+fmt(sc)+' puntos. Misma partida para los dos. ¿Me superas? 💪';
+    var url=baseUrl()+'#reto='+enc({v:1,id:id,g:g,seed:seed,n:me,s:sc,a:S.avatar||'johnny'});
+    var txt=cc?'🔥 Reto para «'+cc.name+'»: '+me+' ha hecho '+fmt(sc)+' en '+GAMES[g].short+'. Misma partida para todos. ¿Quién me supera?':(fr?fr.n+', ':'')+me+' te reta en '+GAMES[g].short+': '+fmt(sc)+' puntos. Misma partida para los dos. ¿Me superas? 💪';
     if(fr&&fr.ph){window.open('https://wa.me/'+fr.ph+'?text='+encodeURIComponent(txt+'\n'+url),'_blank','noopener');toast('Abriendo el chat de '+fr.n+' en WhatsApp');return;}
-    shareModal(fr?'Reta a '+esc(fr.n):'Reta a un amigo',txt,url);
+    shareModal(cc?'Reta al círculo «'+esc(cc.name)+'»':(fr?'Reta a '+esc(fr.n):'Reta a un amigo'),txt,url);
   });
 }
 function sendResp(){
   if(!ctx||!ctx.result||ctx.mode!=='reto')return;var r=retoByKey(ctx.retoKey);if(!r)return;var sc=ctx.result.score;
   needAlias(function(){
-    var me=myAlias(),url=baseUrl()+'#resp='+enc({v:1,id:r.id,g:r.g,seed:r.seed,n:me,s:sc,a:S.avatar||'',to:{n:r.them,s:r.his}});
+    var me=myAlias(),url=baseUrl()+'#resp='+enc({v:1,id:r.id,g:r.g,seed:r.seed,n:me,s:sc,a:S.avatar||'johnny',to:{n:r.them,s:r.his}});
     var txt=sc>r.his?me+' ha superado tu reto en '+GAMES[r.g].short+': '+fmt(sc)+' contra tus '+fmt(r.his)+'. 😎 ¿Revancha?':me+' ha jugado tu reto en '+GAMES[r.g].short+': '+fmt(sc)+' contra tus '+fmt(r.his)+'. Esta vez ganas tú…';
     shareModal('Contesta a '+esc(r.them),txt,url,sc>r.his?'gane':'perdi');
   });
@@ -882,12 +889,14 @@ function sendResp(){
 function sendRespWith(stId){
   if(!ctx||!ctx.result||ctx.mode!=='reto')return;var r=retoByKey(ctx.retoKey);if(!r)return;var sc=ctx.result.score;
   needAlias(function(){
-    var me=myAlias(),url=baseUrl()+'#resp='+enc({v:1,id:r.id,g:r.g,seed:r.seed,n:me,s:sc,a:S.avatar||'',to:{n:r.them,s:r.his}});
+    var me=myAlias(),url=baseUrl()+'#resp='+enc({v:1,id:r.id,g:r.g,seed:r.seed,n:me,s:sc,a:S.avatar||'johnny',to:{n:r.them,s:r.his}});
     var txt=(sc>r.his?me+' ha superado tu reto en ':me+' ha jugado tu reto en ')+GAMES[r.g].short+': '+fmt(sc)+' contra tus '+fmt(r.his)+'.';
     shareSticker(stId,txt,url);
   });
 }
 function incoming(kind,p){
+  if(kind==='amigo'){incomingFriend(p);return;}
+  if(kind==='circulo'){incomingCircle(p);return;}
   if(!p||!GAMES[p.g]||!p.seed||p.s==null||!p.n)return;
   var n=String(p.n).slice(0,16),G0=GAMES[p.g];addFriend(n,p.a);var fa=friendIni(n);
   if(kind==='reto'){
@@ -974,8 +983,8 @@ function fkey(n){return String(n).trim().toLowerCase();}
 function friends(){if(!S.friends)S.friends={};return S.friends;}
 function addFriend(n,a){if(!n)return;var F=friends(),k=fkey(n),f=F[k];if(!f){f=F[k]={n:n,a:'',ph:'',fav:false,t:Date.now()};}f.n=n;f.t=Date.now();if(a&&avSrc(a))f.a=a;save();return f;}
 function friendIni(n){var f=friends()[fkey(n)];return f&&f.a&&avSrc(f.a)?'@'+f.a:initials(n);}
-function h2h(n){var w=0,l=0,k=fkey(n);retos().forEach(function(r){
-  if(r.dir==='in'&&fkey(r.them)===k&&r.mine!=null){if(r.mine>r.his)w++;else l++;}
+function h2h(n){var w=0,l=0,k=fkey(n),outIds={};retos().forEach(function(r){if(r.dir==='out')outIds[r.id]=1;});retos().forEach(function(r){
+  if(r.dir==='in'&&!outIds[r.id]&&fkey(r.them)===k&&r.mine!=null){if(r.mine>r.his)w++;else l++;}
   if(r.dir==='out')r.ans.forEach(function(a){if(fkey(a.n)===k){if(r.mine>a.s)w++;else l++;}});});return {w:w,l:l};}
 function avatarPicker(){
   var keys=['johnny','p1','p2','p3','p4','p5','p6','p7','p8','p9','x1','x2','x3','x4','x5','x6','x7','x8','x9'],cur=S.avatar||'johnny';
@@ -1013,8 +1022,8 @@ function saveFriend(){
 function delFriend(){var F=friends();if(editingFriend&&F[editingFriend]){var n=F[editingFriend].n;delete F[editingFriend];save();closeModal();render();toast(n+' quitado de tus rivales');}}
 function friendsHtml(){
   var L=Object.keys(friends()).map(function(k){return friends()[k];}).sort(function(a,b){return (b.fav-a.fav)||(b.t-a.t);});
-  var h='<div class="sec"><span>Rivales favoritos</span><button class="gbtn" type="button" data-act="addFriend" style="height:30px;font-size:12px">+ Añadir</button></div>';
-  if(!L.length)return h+'<div class="box alt" style="text-align:center"><span class="small">Cuando te rete alguien o contestes un reto, aparecerá aquí. También puedes añadirlo tú con «+ Añadir».</span></div>';
+  var h='<div class="sec"><span>Rivales favoritos</span><span class="row" style="gap:6px"><button class="gbtn" type="button" data-act="inviteFriend" style="height:30px;font-size:12px">Invitar</button><button class="gbtn" type="button" data-act="addFriend" style="height:30px;font-size:12px">+ Añadir</button></span></div>';
+  if(!L.length)return h+'<div class="box alt" style="text-align:center"><span class="small">Envía una solicitud con «Invitar»: cuando tu amigo la acepte, aparecerá aquí. También se añade quien te rete o conteste tus retos.</span></div>';
   h+='<ul class="list">';
   L.forEach(function(f){var k=fkey(f.n),r=h2h(f.n);
     h+='<li class="hrow frow">'+av(friendIni(f.n),fcol(f.n),44)+
@@ -1028,6 +1037,131 @@ function friendRetoPicker(k){
   var h='<div style="display:flex;flex-direction:column;gap:10px"><div class="row" style="gap:10px">'+av(friendIni(f.n),fcol(f.n),44)+'<div class="t1">¿A qué retas a '+esc(f.n)+'?</div></div><div class="small">Juegas una partida y al acabar le mandas el reto'+(f.ph?' directamente a su chat de WhatsApp':'')+'.</div><div class="games" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">';
   GKEYS.forEach(function(g){h+='<button class="stk" type="button" data-fr-game="'+g+'"><img src="'+IMG[g]+'" alt="" style="width:64px;height:64px;border-radius:12px"><span class="n">'+GAMES[g].short+'</span></button>';});
   editingFriend=k;openModal(h+'</div></div>','Retar a '+f.n,'bottom');
+}
+
+
+/* ======================= SOLICITUDES DE AMISTAD Y CÍRCULOS ======================= */
+function circles(){if(!S.circles)S.circles={};return S.circles;}
+function reqs(){if(!S.reqs)S.reqs=[];return S.reqs;}
+function avStack(members,size){return '<span class="avstack">'+members.slice(0,5).map(function(m){return av(m.a&&avSrc(m.a)?'@'+m.a:initials(m.n),fcol(m.n),size,'border:2px solid #10336A');}).join('')+(members.length>5?'<span class="more">+'+(members.length-5)+'</span>':'')+'</span>';}
+function inviteFriend(){
+  needAlias(function(){
+    var id=rid();reqs().unshift({id:id,t:Date.now(),ok:[]});if(S.reqs.length>20)S.reqs.length=20;save();
+    var url=baseUrl()+'#amigo='+enc({v:1,k:'req',id:id,n:myAlias(),a:S.avatar||'johnny'});
+    shareModal('Solicitud de amistad',myAlias()+' quiere ser tu rival en MundiCash Juegos 🤝 Acepta y nos picamos con retos:',url);
+  });
+}
+function incomingFriend(p){
+  if(!p||!p.n||!p.id)return;var n=String(p.n).slice(0,16);
+  if(p.k==='ok'){
+    var f=addFriend(n,p.a);f.fav=true;var r=null;reqs().forEach(function(x){if(x.id===p.id)r=x;});if(r&&r.ok.indexOf(n)<0)r.ok.push(n);save();
+    openModal('<div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">'+av(friendIni(n),fcol(n),88,'border:4px solid #5BE07D')+
+      '<span class="eye" style="color:#7DF0A0">Solicitud aceptada</span><span class="t1" style="font-size:24px">'+esc(n)+' ya es tu rival</span><span class="small">Lo tienes en tus rivales favoritos. ¿Le retas ya?</span>'+
+      '<button class="cta full shine" type="button" data-fr-reto="'+esc(fkey(n))+'">Retar a '+esc(n)+'</button><button class="cta ghost full" type="button" data-go="perfil">Ver mis rivales</button></div>','Nuevo rival');
+    return;
+  }
+  var known=!!friends()[fkey(n)]&&friends()[fkey(n)].fav;
+  pendingReq={id:p.id,n:n,a:p.a||''};
+  openModal('<div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">'+av(p.a&&avSrc(p.a)?'@'+p.a:initials(n),fcol(n),88,'border:4px solid #F5C542')+
+    '<span class="eye" style="color:var(--gold)">Solicitud de amistad</span><span class="t1" style="font-size:24px">'+esc(n)+' quiere ser tu rival</span>'+
+    '<span class="small">Al aceptar le tendrás en tus rivales favoritos y podrás retarle con un toque. Después le mandas la confirmación por WhatsApp.</span>'+
+    (known?'<span class="chipr">Ya está en tus rivales</span>':'')+
+    '<button class="cta full shine" type="button" data-act="acceptReq">Aceptar</button><button class="cta ghost full" type="button" data-act="closeModal">Ahora no</button></div>','Solicitud de '+n);
+}
+var pendingReq=null,pendingCircle=null;
+function acceptReq(){
+  var q=pendingReq;if(!q)return;
+  needAlias(function(){
+    var f=addFriend(q.n,q.a);f.fav=true;save();render();
+    var url=baseUrl()+'#amigo='+enc({v:1,k:'ok',id:q.id,n:myAlias(),a:S.avatar||'johnny'});
+    shareModal('Confirma a '+esc(q.n),myAlias()+' ha aceptado tu solicitud. ¡Ya somos rivales! 😈 Abre esto para tenerme en tu lista:',url);
+  });
+}
+function circleMembersMe(c){var me=myAlias(),has=c.members.some(function(m){return fkey(m.n)===fkey(me);});if(!has)c.members.push({n:me,a:S.avatar||'johnny'});else c.members.forEach(function(m){if(fkey(m.n)===fkey(me))m.a=S.avatar||'johnny';});}
+function circleLink(c){return baseUrl()+'#circulo='+enc({v:1,id:c.id,name:c.name,o:c.owner,m:c.members.map(function(m){return {n:m.n,a:m.a||''};})});}
+function createCircleModal(){
+  needAlias(function(){
+    var L=Object.keys(friends()).map(function(k){return friends()[k];}).sort(function(a,b){return (b.fav-a.fav)||(b.t-a.t);});
+    var h='<div style="display:flex;flex-direction:column;gap:12px"><label class="small" for="ciName">Nombre del círculo</label><input id="ciName" class="inp" maxlength="24" placeholder="Por ejemplo, Los del curro">';
+    h+=L.length?'<div class="small">¿A quién metes? (luego se pueden unir más con el enlace)</div><div class="cilist">'+L.map(function(f){var k=fkey(f.n);return '<label class="cirow"><input type="checkbox" value="'+esc(k)+'" '+(f.fav?'checked':'')+'>'+av(friendIni(f.n),fcol(f.n),36)+'<span>'+esc(f.n)+'</span></label>';}).join('')+'</div>':
+      '<div class="small">Todavía no tienes rivales guardados: crea el círculo y comparte el enlace en tu grupo de WhatsApp para que se unan.</div>';
+    openModal(h+'<button class="cta full" type="button" data-act="saveCircle">Crear y compartir</button></div>','Nuevo círculo','bottom');
+  });
+}
+function saveCircle(){
+  var name=(($('ciName')&&$('ciName').value)||'').trim().replace(/\s+/g,' ');if(name.length<2){toast('Ponle un nombre al círculo');return;}
+  var c={id:rid(),name:name.slice(0,24),owner:myAlias(),members:[],t:Date.now()};
+  Array.prototype.forEach.call(document.querySelectorAll('.cilist input:checked'),function(i){var f=friends()[i.value];if(f)c.members.push({n:f.n,a:f.a||''});});
+  circleMembersMe(c);circles()[c.id]=c;save();render();
+  shareModal('Invita a «'+esc(c.name)+'»','Te invito a mi círculo de rivales «'+c.name+'» en MundiCash Juegos 🏆 Entra, únete y a ver quién manda:',circleLink(c));
+}
+function incomingCircle(p){
+  if(!p||!p.id||!p.name||!p.m)return;
+  var c=circles()[p.id],isNew=!c,me=fkey(myAlias());
+  if(!c){c={id:p.id,name:String(p.name).slice(0,24),owner:String(p.o||'').slice(0,16),members:[],t:Date.now(),joined:false};}
+  var before=c.members.length;
+  p.m.forEach(function(m){if(!m||!m.n)return;var n=String(m.n).slice(0,16);var ex=null;c.members.forEach(function(x){if(fkey(x.n)===fkey(n))ex=x;});if(ex){if(m.a)ex.a=m.a;}else c.members.push({n:n,a:m.a||''});});
+  var amIn=c.joined||c.members.some(function(x){return fkey(x.n)===me&&S.alias;});
+  if(!isNew&&amIn){circles()[c.id]=c;c.members.forEach(function(m){if(fkey(m.n)!==me)addFriend(m.n,m.a);});save();
+    toast(c.members.length>before?'«'+c.name+'» actualizado: '+(c.members.length-before)+' miembro(s) nuevo(s)':'Ya estás en «'+c.name+'»');circleModal(c.id);return;}
+  pendingCircle=c;
+  openModal('<div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">'+medal3('trofeo')+
+    '<span class="eye" style="color:var(--gold)">Invitación a un círculo</span><span class="t1" style="font-size:24px">«'+esc(c.name)+'»</span>'+
+    '<span class="small">'+esc(c.owner||'Un amigo')+' te invita a su círculo de rivales. Son '+c.members.length+':</span>'+avStack(c.members,40)+
+    '<span class="small">'+c.members.map(function(m){return esc(m.n);}).join(' · ')+'</span>'+
+    '<button class="cta full shine" type="button" data-act="joinCircle">Unirme</button><button class="cta ghost full" type="button" data-act="closeModal">Ahora no</button></div>','Círculo «'+c.name+'»');
+}
+function joinCircle(){
+  var c=pendingCircle;if(!c)return;
+  needAlias(function(){
+    c.joined=true;circleMembersMe(c);circles()[c.id]=c;
+    var me=fkey(myAlias());c.members.forEach(function(m){if(fkey(m.n)!==me){var f=addFriend(m.n,m.a);f.fav=true;}});save();render();
+    shareModal('Avisa al grupo','¡'+myAlias()+' se ha unido a «'+c.name+'»! 💪 Abrid este enlace para tenerme en el círculo:',circleLink(c));
+  });
+}
+function circleBoard(c){
+  var me=fkey(myAlias()),mem={};c.members.forEach(function(m){mem[fkey(m.n)]=m.n;});
+  var rows=[];
+  GKEYS.forEach(function(g){var best=null;
+    function cand(n,sc){if(sc==null)return;if(!best||sc>best.s)best={n:n,s:sc};}
+    if(S.record[g])cand(myAlias(),S.record[g]);
+    retos().forEach(function(r){if(r.g!==g)return;
+      if(r.dir==='in'&&mem[fkey(r.them)])cand(mem[fkey(r.them)],r.his);
+      if(r.dir==='out')r.ans.forEach(function(a){if(mem[fkey(a.n)])cand(mem[fkey(a.n)],a.s);});});
+    if(best)rows.push({g:g,n:best.n,s:best.s,me:fkey(best.n)===me});});
+  return rows;
+}
+function circleModal(id){
+  var c=circles()[id];if(!c)return;var me=fkey(myAlias());
+  var h='<div style="display:flex;flex-direction:column;gap:12px"><div class="row" style="gap:10px">'+avStack(c.members,36)+'<span class="small">'+c.members.length+' miembros · creado por '+esc(c.owner||'—')+'</span></div>';
+  h+='<button class="cta full shine" type="button" data-ci-reto="'+c.id+'">Retar al círculo</button>';
+  h+='<div class="sec" style="margin:0"><span>Miembros</span></div><ul class="list">';
+  c.members.forEach(function(m){var isMe=fkey(m.n)===me,r=isMe?null:h2h(m.n);
+    h+='<li class="hrow frow">'+(isMe?'<img src="'+myAvatar()+'" alt="" style="width:40px;height:40px;border-radius:50%">':av(m.a&&avSrc(m.a)?'@'+m.a:initials(m.n),fcol(m.n),40))+
+      '<div class="grow"><div class="t2" style="font-size:15px">'+esc(m.n)+(isMe?' (tú)':'')+'</div>'+(isMe?'':'<div class="small" style="color:#fff">'+(r.w+r.l?'Tú <b style="color:#7DF0A0">'+r.w+'</b> – <b style="color:#FF9A8B">'+r.l+'</b>':'Aún sin duelos')+'</div>')+'</div>'+
+      (isMe?'':'<button class="cta" type="button" data-fr-reto="'+esc(fkey(m.n))+'" style="min-height:34px;font-size:13px;padding:0 12px">Retar</button>')+'</li>';});
+  h+='</ul>';
+  var rows=circleBoard(c);
+  h+='<div class="sec" style="margin:0"><span>Mejores marcas del círculo</span></div>';
+  h+=rows.length?'<ul class="list">'+rows.map(function(x){return '<li class="hrow'+(x.me?' me':'')+'"><img src="'+IMG[x.g]+'" alt=""><div class="grow"><div class="t2" style="font-size:14px">'+GAMES[x.g].short+'</div><div class="small" style="color:#fff">'+esc(x.n)+(x.me?' (tú)':'')+'</div></div><b style="font-size:18px">'+fmt(x.s)+'</b></li>';}).join('')+'</ul>':
+    '<div class="box alt"><span class="small">Aún no hay marcas. Lanza un reto al círculo y aquí irán apareciendo.</span></div>';
+  h+='<p class="note" style="margin:0">Las marcas salen de tus récords y de los retos que te llegan. Cada móvil ve los retos en los que ha participado.</p>';
+  h+='<button class="cta ghost full" type="button" data-ci-share="'+c.id+'">Invitar a más gente</button><button class="cta ghost full" type="button" data-ci-leave="'+c.id+'">Salir del círculo</button></div>';
+  openModal(h,'«'+c.name+'»','bottom');
+}
+function circleRetoPicker(id){
+  var c=circles()[id];if(!c)return;
+  var h='<div style="display:flex;flex-direction:column;gap:10px"><div class="t1">¿A qué retas a «'+esc(c.name)+'»?</div><div class="small">Juegas una partida y al acabar mandas el reto al grupo: todos jugarán la misma partida.</div><div class="games" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">';
+  GKEYS.forEach(function(g){h+='<button class="stk" type="button" data-ci-game="'+g+'"><img src="'+IMG[g]+'" alt="" style="width:64px;height:64px;border-radius:12px"><span class="n">'+GAMES[g].short+'</span></button>';});
+  pendingCircle=c;openModal(h+'</div></div>','Retar al círculo','bottom');
+}
+function circlesHtml(){
+  var L=Object.keys(circles()).map(function(k){return circles()[k];}).sort(function(a,b){return b.t-a.t;});
+  var h='<div class="sec"><span>Círculos de rivales</span><button class="gbtn" type="button" data-act="newCircle" style="height:30px;font-size:12px">+ Crear</button></div>';
+  if(!L.length)return h+'<div class="box alt" style="text-align:center"><span class="small">Crea un círculo con tu grupo (la peña, los del curro…) y retadlo entero con una sola partida.</span></div>';
+  return h+L.map(function(c){var rows=circleBoard(c),mine=rows.filter(function(x){return x.me;}).length;
+    return '<div class="mc w" style="min-height:0">'+avStack(c.members,34)+'<div class="mid" style="min-width:0"><span class="t2" style="font-size:16px">«'+esc(c.name)+'»</span><span class="small" style="color:#fff">'+c.members.length+' miembros'+(rows.length?' · lideras '+mine+' de '+rows.length+' juegos':'')+'</span></div>'+
+      '<div class="res" style="flex-direction:column;gap:6px"><button class="cta" type="button" data-ci-open="'+c.id+'" style="min-height:32px;font-size:12px;padding:0 12px">Ver</button><button class="cta gold" type="button" data-ci-reto="'+c.id+'" style="min-height:32px;font-size:12px;padding:0 12px">Retar</button></div></div>';}).join('');
 }
 
 /* ======================= MODALES ======================= */
@@ -1136,7 +1270,7 @@ function showSheet(){
   if(duel&&ctx.mode==='reto'){h+=stickerRowHtml(r.win?'gane':'perdi','data-wa-resp').replace('Acompáñalo de un sticker','Pícale con un sticker por WhatsApp');}
   else if(duel){var own=ownedOrdered(r.win?'gane':'perdi');
     h+='<div><div class="small" style="margin-bottom:6px">'+(r.sent?'Sticker enviado a '+R2.name:'Envía un sticker a '+R2.name)+'</div><div class="sendrow">'+own.map(function(s){return '<button type="button" data-send="'+s.id+'"'+(r.sent?' disabled':'')+'>'+sticker(s,52)+s.name+'</button>';}).join('')+'</div></div>';}
-  if(ctx.seed)h+=(ctx.mode==='reto'?'<button class="cta gold full" type="button" data-act="shareResp">Contestar a '+R2.name+'</button>':'<button class="cta gold full" type="button" data-act="shareReto">'+(ctx.forFriend&&S.friends&&S.friends[ctx.forFriend]?'Retar a '+esc(S.friends[ctx.forFriend].n)+' con esta partida':'Retar a un amigo con esta partida')+'</button>');
+  if(ctx.seed)h+=(ctx.mode==='reto'?'<button class="cta gold full" type="button" data-act="shareResp">Contestar a '+R2.name+'</button>':'<button class="cta gold full" type="button" data-act="shareReto">'+(ctx.forCircle&&circles()[ctx.forCircle]?'Retar al círculo «'+esc(circles()[ctx.forCircle].name)+'»':(ctx.forFriend&&S.friends&&S.friends[ctx.forFriend]?'Retar a '+esc(S.friends[ctx.forFriend].n)+' con esta partida':'Retar a un amigo con esta partida'))+'</button>');
   h+='<div class="row"><button class="cta grow" type="button" data-act="again">'+(ctx.mode==='copa'||ctx.mode==='reto'?'Otro intento':(duel?'Revancha':'Jugar otra'))+'</button><button class="cta ghost grow" type="button" data-act="toLobby">Salir</button></div>';
   $('sheetIn').innerHTML=h;$('sheet').hidden=false;
   if(r.shown)return;r.shown=true;
@@ -1329,7 +1463,7 @@ window.addEventListener('blur',function(){release({type:'pointercancel'});});
 document.addEventListener('click',function(e){if(e.detail===0){var b=e.target.closest&&e.target.closest(PUSH);if(b&&!pushOff(b))spring(b,b.matches('a.mc,.feat,.opt'));}},true);
 document.addEventListener('click',function(e){
   if(vsBusy)return;
-  var t=e.target.closest('[data-act],[data-go],[data-pick],[data-stake],[data-claim],[data-comp],[data-rank],[data-copa-open],[data-copa-play],[data-shop],[data-st],[data-buy],[data-pack],[data-send],[data-replay],[data-reto-play],[data-reto-new],[data-reto-resend],[data-wa],[data-wa-share],[data-wa-resp],[data-stcat],[data-avsel],[data-fr-edit],[data-fr-fav],[data-fr-reto],[data-fr-game]');
+  var t=e.target.closest('[data-act],[data-go],[data-pick],[data-stake],[data-claim],[data-comp],[data-rank],[data-copa-open],[data-copa-play],[data-shop],[data-st],[data-buy],[data-pack],[data-send],[data-replay],[data-reto-play],[data-reto-new],[data-reto-resend],[data-wa],[data-wa-share],[data-wa-resp],[data-stcat],[data-avsel],[data-fr-edit],[data-fr-fav],[data-fr-reto],[data-fr-game],[data-ci-open],[data-ci-reto],[data-ci-game],[data-ci-share],[data-ci-leave]');
   if(!t)return;var a=t.dataset;
   if(a.go){closeModal();if(location.hash==='#'+a.go)route();else location.hash=a.go;return;}
   if(a.pick){stakePicker(a.pick);return;}
@@ -1348,6 +1482,11 @@ document.addEventListener('click',function(e){
   if(a.send){if(ctx&&ctx.result&&!ctx.result.sent){ctx.result.sent=true;S.day.stickers++;save();toast('Has enviado «'+sById(a.send).name+'» a '+ctx.rival.name);showSheet();}return;}
   if(a.replay){toast('Las repeticiones se verán en la app final');return;}
   if(a.avsel){pickAv(a.avsel);return;}
+  if(a.ciOpen){circleModal(a.ciOpen);return;}
+  if(a.ciReto){circleRetoPicker(a.ciReto);return;}
+  if(a.ciGame){var cid=pendingCircle&&pendingCircle.id;closeModal();launch(a.ciGame,'prac',STAKES[0],null,null,null,{forReto:true,forCircle:cid});return;}
+  if(a.ciShare){var c3=circles()[a.ciShare];if(c3){circleMembersMe(c3);save();shareModal('Invita a «'+esc(c3.name)+'»','Te invito a mi círculo de rivales «'+c3.name+'» en MundiCash Juegos 🏆 Entra, únete y a ver quién manda:',circleLink(c3));}return;}
+  if(a.ciLeave){var c4=circles()[a.ciLeave];if(c4){delete circles()[a.ciLeave];save();closeModal();render();toast('Has salido de «'+c4.name+'»');}return;}
   if(a.frEdit){friendModal(a.frEdit);return;}
   if(a.frFav){var ff=friends()[a.frFav];if(ff){ff.fav=!ff.fav;save();render();}return;}
   if(a.frReto){friendRetoPicker(a.frReto);return;}
@@ -1358,7 +1497,7 @@ document.addEventListener('click',function(e){
   if(a.waResp){sendRespWith(a.waResp);return;}
   if(a.retoPlay){closeModal();playReto(a.retoPlay);return;}
   if(a.retoNew){closeModal();launch(a.retoNew,'prac',STAKES[0],null,null,null,{forReto:true});return;}
-  if(a.retoResend){var rr=retoByKey(a.retoResend);if(rr){var u=baseUrl()+'#reto='+enc({v:1,id:rr.id,g:rr.g,seed:rr.seed,n:myAlias(),s:rr.mine,a:S.avatar||''});shareModal('Reenviar reto',myAlias()+' te reta en '+GAMES[rr.g].short+': '+fmt(rr.mine)+' puntos. Misma partida para los dos. ¿Me superas? 💪',u);}return;}
+  if(a.retoResend){var rr=retoByKey(a.retoResend);if(rr){var u=baseUrl()+'#reto='+enc({v:1,id:rr.id,g:rr.g,seed:rr.seed,n:myAlias(),s:rr.mine,a:S.avatar||'johnny'});shareModal('Reenviar reto',myAlias()+' te reta en '+GAMES[rr.g].short+': '+fmt(rr.mine)+' puntos. Misma partida para los dos. ¿Me superas? 💪',u);}return;}
   switch(a.act){
     case 'menu':menuPanel();break;
     case 'weekly':weeklyPopup();break;
@@ -1379,6 +1518,11 @@ document.addEventListener('click',function(e){
     case 'saveAlias':saveAlias();break;
     case 'editAlias':needAlias(function(){render();},true);break;
     case 'pickAvatar':avatarPicker();break;
+    case 'inviteFriend':inviteFriend();break;
+    case 'acceptReq':acceptReq();break;
+    case 'newCircle':createCircleModal();break;
+    case 'saveCircle':saveCircle();break;
+    case 'joinCircle':joinCircle();break;
     case 'addFriend':friendModal(null);break;
     case 'saveFriend':saveFriend();break;
     case 'delFriend':delFriend();break;
@@ -1402,7 +1546,7 @@ document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(!$
 /* ======================= RUTAS ======================= */
 function route(){
   var h=location.hash.replace('#','');
-  var mm=/^(reto|resp)=(.+)$/.exec(h);
+  var mm=/^(reto|resp|amigo|circulo)=(.+)$/.exec(h);
   if(mm){pendingIncoming={k:mm[1],p:dec(mm[2])};if(history.replaceState){history.replaceState(null,'','#games');}else{location.replace('#games');return;}h='games';}
   if(GAMES[h]){if(skipRoute){skipRoute=false;if(current===h)return;}if(h!==current)open(h);return;}
   var fromGame=!!current;
