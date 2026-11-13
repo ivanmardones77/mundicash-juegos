@@ -318,7 +318,7 @@ a.mc.pressed,.feat.pressed,.opt.pressed,.pack.pressed{transform:translateY(2px) 
   60%{transform:translate(-4px,-2px)}
   80%{transform:translate(4px,2px)}
 }
-.shake{animation:screenShake .28s cubic-bezier(.36,.07,.19,.97) both}
+.shake{animation:screenShake .28s cubic-bezier(.36,.07,.19,.97)}
 
 /* Destello al sumar saldo/diamantes */
 @keyframes pillPop{
@@ -2151,9 +2151,10 @@ load();skPreload();save();route();booted=true;maybeOnboarding();checkAch();setTi
           if (node.classList.contains('vsov')) {
             setTimeout(() => {
               SFX.impact();
-              document.body.classList.remove('shake');
-              void document.body.offsetWidth;
-              document.body.classList.add('shake');
+              node.classList.remove('shake');
+              void node.offsetWidth;
+              node.classList.add('shake');
+              setTimeout(() => node.classList.remove('shake'), 400);
             }, 350);
           }
           if (node.classList.contains('confetti')) {
