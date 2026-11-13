@@ -912,6 +912,10 @@ function sendResp(){
     shareModal('Contesta a '+esc(r.them),txt,url,sc>r.his?'gane':'perdi',{g:r.g,score:sc,vs:{n:r.them,s:r.his,a:(friends()[fkey(r.them)]||{}).a},eye:sc>r.his?'Reto superado':'Reto jugado',line:sc>r.his?'Te he ganado. ¿Revancha? 😎':'Esta vez ganas tú…',foot:'Misma partida para los dos'});
   });
 }
+function sendRespFor(key){var r=retoByKey(key);if(!r)return;var sc=r.mine||0;closeModal();
+  needAlias(function(){var me=myAlias(),url=baseUrl()+'#resp='+enc({v:1,id:r.id,g:r.g,seed:r.seed,n:me,s:sc,a:myAvKey(),to:{n:r.them,s:r.his}});
+    var txt=sc>r.his?me+' ha superado tu reto en '+GAMES[r.g].short+': '+fmt(sc)+' contra tus '+fmt(r.his)+'. 😎 ¿Revancha?':me+' ha jugado tu reto en '+GAMES[r.g].short+': '+fmt(sc)+' contra tus '+fmt(r.his)+'. Esta vez ganas tú…';
+    shareModal('Contesta a '+esc(r.them),txt,url,sc>r.his?'gane':'perdi',{g:r.g,score:sc,vs:{n:r.them,s:r.his,a:(friends()[fkey(r.them)]||{}).a},eye:sc>r.his?'Reto superado':'Reto jugado',line:sc>r.his?'Te he ganado. ¿Revancha? 😎':'Esta vez ganas tú…',foot:'Misma partida para los dos'});});}
 function sendRespWith(stId){
   if(!ctx||!ctx.result||ctx.mode!=='reto')return;var r=retoByKey(ctx.retoKey);if(!r)return;var sc=ctx.result.score;
   needAlias(function(){
@@ -933,24 +937,24 @@ function incoming(kind,p){
     openModal('<div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">'+av(fa,fcol(n),84,'border:4px solid #F5C542')+
       '<span class="eye" style="color:var(--gold)">Reto entre amigos</span><span class="t1" style="font-size:24px">'+esc(n)+' te reta</span>'+
       '<div class="row" style="gap:12px;background:rgba(0,0,0,.25);border-radius:14px;padding:10px 14px"><img src="'+IMG[p.g]+'" alt="" style="width:56px;height:56px;border-radius:12px"><div style="text-align:left"><div class="t2">'+G0.name+'</div><div class="small">Tienes que superar <b style="color:#fff;font-size:18px">'+fmt(+p.s)+'</b></div></div></div>'+
-      '<span class="small">Misma partida para los dos: mismas piezas y en el mismo orden. Puedes intentarlo las veces que quieras.</span>'+
-      (r.mine!=null?'<span class="chipr">Tu mejor intento: '+fmt(r.mine)+'</span>':'')+
-      '<button class="cta full shine" type="button" data-reto-play="'+key+'">Aceptar el reto</button><button class="cta ghost full" type="button" data-act="closeModal">Ahora no</button></div>','Reto de '+n);
+      (r.tried||r.mine!=null?'<span class="chipr">Ya lo jugaste: '+fmt(r.mine||0)+'</span><button class="cta full shine" type="button" data-reto-ans="'+key+'">Mandar mi resultado</button><button class="cta ghost full" type="button" data-fr-reto="'+esc(fkey(n))+'">Retarle con otra partida</button></div>':
+      '<span class="small">Misma partida para los dos: mismas piezas y en el mismo orden. <b style="color:#FFE08A">Solo tienes un intento</b>: si sales a mitad, cuenta como 0.</span>'+
+      '<button class="cta full shine" type="button" data-reto-play="'+key+'">Aceptar el reto</button><button class="cta ghost full" type="button" data-act="closeModal">Ahora no</button></div>'),'Reto de '+n);
   } else {
     var mine=retoByKey('o_'+p.id),me=p.to&&p.to.s!=null?+p.to.s:(mine?mine.mine:0);
     if(mine){var found=false;mine.ans.forEach(function(a){if(a.n===n){found=true;if(+p.s>a.s)a.s=+p.s;a.t=Date.now();}});if(!found)mine.ans.push({n:n,s:+p.s,t:Date.now()});}
     var key2='i_'+p.id+'_'+n,r2=retoByKey(key2);
-    if(!r2){r2={key:key2,id:p.id,dir:'in',g:p.g,seed:+p.seed,them:n,his:+p.s,mine:me,t:Date.now()};retos().unshift(r2);}else{r2.his=Math.max(r2.his,+p.s);}
+    if(!r2){r2={key:key2,id:p.id,dir:'in',g:p.g,seed:+p.seed,them:n,his:+p.s,mine:me,tried:1,t:Date.now()};retos().unshift(r2);}else{r2.his=Math.max(r2.his,+p.s);}
     save();
     var won=+p.s>me;
     openModal('<div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">'+av(fa,fcol(n),84,'border:4px solid '+(won?'#FF8A80':'#5BE07D'))+
       '<span class="eye" style="color:var(--gold)">Respuesta a tu reto · '+G0.short+'</span><span class="t1" style="font-size:24px">'+(won?esc(n)+' te ha superado':'¡Has ganado a '+esc(n)+'!')+'</span>'+
       '<div class="vsrow" style="width:100%"><div><b>'+fmt(me)+'</b><br><span>Tú</span></div><span class="small">vs</span><div><b>'+fmt(+p.s)+'</b><br><span>'+esc(n)+'</span></div></div>'+streakBox(n)+
-      (won?'<button class="cta full shine" type="button" data-reto-play="'+key2+'">Revancha en la misma partida</button>':'<button class="cta full" type="button" data-reto-play="'+key2+'">Subir aún más mi marca</button>')+
+      '<button class="cta full shine" type="button" data-fr-reto="'+esc(fkey(n))+'">'+(won?'Revancha con partida nueva':'Retarle otra vez')+'</button>'+
       '<button class="cta ghost full" type="button" data-act="goRetos">Ver mis retos</button></div>','Respuesta de '+n);
   }
 }
-function playReto(key){var r=retoByKey(key);if(!r)return;launch(r.g,'reto',STAKES[0],{name:r.them,ini:friendIni(r.them),color:fcol(r.them)},r.his,r.seed,{retoKey:key});}
+function playReto(key){var r=retoByKey(key);if(!r)return;if(r.dir==='in'&&(r.tried||r.mine!=null)){toast('Este reto ya lo has jugado: solo hay un intento. ¡Lanza uno nuevo!');return;}r.tried=1;r.mine=0;r.tp=Date.now();save();launch(r.g,'reto',STAKES[0],{name:r.them,ini:friendIni(r.them),color:fcol(r.them)},r.his,r.seed,{retoKey:key});}
 function retosHtml(){
   var L=retos(),h='<div class="box" style="align-items:center;text-align:center">'+medal3('duelos')+'<div class="t1">Reta a tus amigos</div><div class="small">Juega una partida y envía el enlace por WhatsApp. Tu amigo jugará exactamente la misma partida y te podrá contestar.</div>'+
     '<button class="cta full shine" type="button" data-act="newReto">Crear un reto</button>'+(S.alias?'<span class="small">Tu alias: <b style="color:#fff">'+esc(S.alias)+'</b> · <button class="gbtn" type="button" data-act="editAlias" style="height:28px;font-size:12px">Cambiar</button></span>':'')+'</div>';
@@ -963,9 +967,9 @@ function retosHtml(){
       h+='<li class="hrow" style="align-items:flex-start"><img src="'+IMG[r.g]+'" alt=""><div class="grow" style="display:flex;flex-direction:column;gap:6px"><div class="t2" style="font-size:15px">Tu reto · '+G0.short+'</div><div class="small" style="color:#fff">Tu marca <b>'+fmt(r.mine)+'</b> · '+when(r.t)+'</div><div class="row" style="flex-wrap:wrap;gap:6px">'+ans+'</div></div>'+
          '<button class="gbtn" type="button" data-reto-resend="'+r.key+'" style="height:32px;font-size:12px">Reenviar</button></li>';
     } else {
-      var st=r.mine==null?'<span class="tag prac">Pendiente</span>':(r.mine>r.his?'<span class="tag win">Ganado</span>':'<span class="tag lose">Perdido</span>');
+      var st=r.mine==null&&!r.tried?'<span class="tag prac">Pendiente</span>':(r.mine>r.his?'<span class="tag win">Ganado</span>':'<span class="tag lose">Perdido</span>');
       h+='<li class="hrow"><img src="'+IMG[r.g]+'" alt=""><div class="grow"><div class="t2" style="font-size:15px">'+esc(r.them)+' · '+G0.short+'</div><div class="small" style="color:#fff">'+esc(r.them)+' <b>'+fmt(r.his)+'</b>'+(r.mine!=null?' · Tú <b>'+fmt(r.mine)+'</b>':'')+'</div></div>'+
-         '<div class="res">'+st+'<button class="cta" type="button" data-reto-play="'+r.key+'" style="min-height:34px;font-size:13px">'+(r.mine==null?'Jugar':'Otra vez')+'</button></div></li>';
+         '<div class="res">'+st+(r.mine==null&&!r.tried?'<button class="cta" type="button" data-reto-play="'+r.key+'" style="min-height:34px;font-size:13px">Jugar</button>':'<button class="cta ghost" type="button" data-reto-ans="'+r.key+'" style="min-height:34px;font-size:13px">Contestar</button>')+'</div></li>';
     }
   });
   return h+'</ul><p class="note">Los retos se guardan en este móvil. Cada enlace lleva la partida y la puntuación a superar.</p>';
@@ -1270,15 +1274,18 @@ function circleModal(id){
 }
 
 function hstr(t){var h=2166136261;for(var i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
-function cdaily(c){var d=today(),h=hstr(c.id+'|'+d);if(!c.daily||c.daily.d!==d)c.daily={d:d,s:{}};return {d:d,g:GKEYS[h%GKEYS.length],seed:(h%2147480000)+7,sc:c.daily.s};}
+function cdaily(c){var d=today(),h=hstr(c.id+'|'+d);if(!c.daily||c.daily.d!==d)c.daily={d:d,s:{},t:0};return {d:d,g:GKEYS[h%GKEYS.length],seed:(h%2147480000)+7,sc:c.daily.s,tries:c.daily.t||0};}
+var DAILY_TRIES=3;
+function dailyGo(id){var c=circles()[id];if(!c)return false;var D=cdaily(c);if(D.tries>=DAILY_TRIES){toast('Ya has usado tus '+DAILY_TRIES+' intentos de hoy. ¡Mañana hay reto nuevo!');return false;}c.daily.t=D.tries+1;save();launch(D.g,'prac',STAKES[0],null,null,D.seed,{circleDaily:id,cday:D.d});return true;}
 function cdRows(c){var D=cdaily(c),me=fkey(myAlias());return Object.keys(D.sc).map(function(k){var v=D.sc[k];return {n:v.n,a:v.a,s:v.s,me:k===me};}).sort(function(a,b){return b.s-a.s;});}
 function cdPos(c){var L=cdRows(c);for(var i=0;i<L.length;i++)if(L[i].me)return {pos:i+1,of:L.length};return null;}
 function dailyHtml(c,compact){var D=cdaily(c),L=cdRows(c),mine=D.sc[fkey(myAlias())];
   var h='<div class="box alt cday"><div class="row" style="gap:12px"><img src="'+IMG[D.g]+'" alt="" style="width:56px;height:56px;border-radius:12px"><div class="grow"><div class="eye" style="color:var(--gold)">Reto del día · acaba a las 00:00</div><div class="t2" style="font-size:17px">'+GAMES[D.g].short+'</div><div class="small">La misma partida para todo el círculo</div></div></div>';
   h+=L.length?'<ol class="cdrank">'+L.map(function(x,i){return '<li class="'+(x.me?'me':'')+'"><b class="pos">'+(i===0?'👑':(i+1))+'</b>'+av(x.me?'@'+(myAvKey()):(x.a&&avSrc(x.a)?'@'+x.a:initials(x.n)),fcol(x.n),28)+'<span class="grow">'+esc(x.n)+(x.me?' (tú)':'')+'</span><b>'+fmt(x.s)+'</b></li>';}).join('')+'</ol>':'<div class="small">Nadie ha jugado todavía. ¡Estrena el marcador!</div>';
-  h+='<div class="row" style="gap:8px"><button class="cta grow'+(mine?'':' shine')+'" type="button" data-ci-daily="'+c.id+'">'+(mine?'Mejorar mi marca':'Jugar ahora')+'</button>'+(mine?'<button class="cta gold grow" type="button" data-ci-dshare="'+c.id+'">Compartir</button>':'')+'</div></div>';
+  var left=DAILY_TRIES-D.tries;h+='<div class="small" style="text-align:center">'+(left>0?'Te quedan <b style="color:#fff">'+left+' de '+DAILY_TRIES+'</b> intentos hoy · cuenta tu mejor marca':'Has usado tus '+DAILY_TRIES+' intentos de hoy')+'</div>';
+  h+='<div class="row" style="gap:8px">'+(left>0?'<button class="cta grow'+(mine?'':' shine')+'" type="button" data-ci-daily="'+c.id+'">'+(mine?'Mejorar mi marca':'Jugar ahora')+'</button>':'')+(mine?'<button class="cta gold grow" type="button" data-ci-dshare="'+c.id+'">Compartir</button>':'')+'</div></div>';
   return h;}
-function playDaily(id){var c=circles()[id];if(!c)return;needAlias(function(){var D=cdaily(c);closeModal();launch(D.g,'prac',STAKES[0],null,null,D.seed,{circleDaily:id,cday:D.d});});}
+function playDaily(id){var c=circles()[id];if(!c)return;needAlias(function(){closeModal();dailyGo(id);});}
 function dailyPosTxt(){var c=ctx&&circles()[ctx.circleDaily];if(!c)return 'Reto del día';var p=cdPos(c);if(!p)return 'Reto del día';return p.pos===1?'¡Vas primero en «'+esc(c.name)+'»!':'Vas '+p.pos+'º de '+p.of+' en «'+esc(c.name)+'»';}
 function shareDaily(id){var c=circles()[id];if(!c)return;
   needAlias(function(){var D=cdaily(c),m=D.sc[fkey(myAlias())];if(!m){toast('Juega primero el reto del día');return;}
@@ -1456,7 +1463,7 @@ function showSheet(){
     h+='<div><div class="small" style="margin-bottom:6px">'+(r.sent?'Sticker enviado a '+R2.name:'Envía un sticker a '+R2.name)+'</div><div class="sendrow">'+own.map(function(s){return '<button type="button" data-send="'+s.id+'"'+(r.sent?' disabled':'')+'>'+sticker(s,52)+s.name+'</button>';}).join('')+'</div></div>';}
   if(ctx.circleDaily&&circles()[ctx.circleDaily])h+='<button class="cta gold full" type="button" data-act="shareDaily">Compartir en «'+esc(circles()[ctx.circleDaily].name)+'»</button>';
   else if(ctx.seed)h+=(ctx.mode==='reto'?'<button class="cta gold full" type="button" data-act="shareResp">Contestar a '+R2.name+'</button>':'<button class="cta gold full" type="button" data-act="shareReto">'+(ctx.forCircle&&circles()[ctx.forCircle]?'Retar al círculo «'+esc(circles()[ctx.forCircle].name)+'»':(ctx.forFriend&&S.friends&&S.friends[ctx.forFriend]?'Retar a '+esc(S.friends[ctx.forFriend].n)+' con esta partida':'Retar a un amigo con esta partida'))+'</button>');
-  h+='<div class="row"><button class="cta grow" type="button" data-act="again">'+(ctx.mode==='copa'||ctx.mode==='reto'?'Otro intento':(duel?'Revancha':'Jugar otra'))+'</button><button class="cta ghost grow" type="button" data-act="toLobby">Salir</button></div>';
+  h+='<div class="row"><button class="cta grow" type="button" data-act="again">'+(ctx.mode==='copa'?'Otro intento':ctx.mode==='reto'?'Nuevo reto':ctx.circleDaily?'Otro intento':(duel?'Revancha':'Jugar otra'))+'</button><button class="cta ghost grow" type="button" data-act="toLobby">Salir</button></div>';
   $('sheetIn').innerHTML=h;$('sheet').hidden=false;
   if(r.shown)return;r.shown=true;
   /* 5 · celebración (victoria o récord) o temblor (derrota) */
@@ -1648,7 +1655,7 @@ window.addEventListener('blur',function(){release({type:'pointercancel'});});
 document.addEventListener('click',function(e){if(e.detail===0){var b=e.target.closest&&e.target.closest(PUSH);if(b&&!pushOff(b))spring(b,b.matches('a.mc,.feat,.opt'));}},true);
 document.addEventListener('click',function(e){
   if(vsBusy)return;
-  var t=e.target.closest('[data-act],[data-go],[data-pick],[data-stake],[data-claim],[data-comp],[data-rank],[data-copa-open],[data-copa-play],[data-shop],[data-st],[data-buy],[data-pack],[data-send],[data-replay],[data-reto-play],[data-reto-new],[data-reto-resend],[data-wa],[data-wa-share],[data-wa-resp],[data-stcat],[data-avsel],[data-fr-edit],[data-fr-fav],[data-fr-reto],[data-fr-game],[data-ci-open],[data-ci-reto],[data-ci-game],[data-ci-share],[data-ci-leave],[data-ci-daily],[data-ci-dshare],[data-ci-board],[data-dr-claim],[data-dsex],[data-dcat],[data-ditem],[data-sktry],[data-help],[data-onbav]');
+  var t=e.target.closest('[data-act],[data-go],[data-pick],[data-stake],[data-claim],[data-comp],[data-rank],[data-copa-open],[data-copa-play],[data-shop],[data-st],[data-buy],[data-pack],[data-send],[data-replay],[data-reto-play],[data-reto-new],[data-reto-resend],[data-wa],[data-wa-share],[data-wa-resp],[data-stcat],[data-avsel],[data-fr-edit],[data-fr-fav],[data-fr-reto],[data-fr-game],[data-ci-open],[data-ci-reto],[data-ci-game],[data-ci-share],[data-ci-leave],[data-ci-daily],[data-ci-dshare],[data-ci-board],[data-dr-claim],[data-reto-ans],[data-dsex],[data-dcat],[data-ditem],[data-sktry],[data-help],[data-onbav]');
   if(!t)return;var a=t.dataset;
   if(a.go){closeModal();if(location.hash==='#'+a.go)route();else location.hash=a.go;return;}
   if(a.pick){stakePicker(a.pick);return;}
@@ -1670,6 +1677,7 @@ document.addEventListener('click',function(e){
   if(a.ciOpen){circleModal(a.ciOpen);return;}
   if(a.ciDaily){playDaily(a.ciDaily);return;}
   if(a.ciBoard){shareBoard(a.ciBoard);return;}
+  if(a.retoAns){sendRespFor(a.retoAns);return;}
   if(a.help){helpGo(a.help);return;}
   if(a.onbav){S.avatar=a.onbav;if(S.sk)S.sk.on=false;save();renderHdr();onbRender();return;}
   if(a.dsex){if(dress){dress.b=a.dsex;dressRender();}return;}
@@ -1739,8 +1747,8 @@ document.addEventListener('click',function(e){
     case 'again':
       var c=ctx;
       if(c.mode==='copa')launch(c.game,'copa');
-      else if(c.mode==='reto'){ctx={game:c.game,mode:'reto',stake:STAKES[0],rival:c.rival,fixed:c.fixed,seed:c.seed,retoKey:c.retoKey};mount();}
-      else if(c.circleDaily){ctx={game:c.game,mode:'prac',stake:STAKES[0],rival:c.rival,seed:c.seed,circleDaily:c.circleDaily,cday:c.cday};mount();}
+      else if(c.mode==='reto'){var fk0=fkey(c.rival.name);close();launch(c.game,'prac',STAKES[0],null,null,null,{forReto:true,forFriend:friends()[fk0]?fk0:null});}
+      else if(c.circleDaily){var cD2=circles()[c.circleDaily];if(cD2&&cdaily(cD2).tries<DAILY_TRIES){cD2.daily.t=cdaily(cD2).tries+1;save();ctx={game:c.game,mode:'prac',stake:STAKES[0],rival:c.rival,seed:c.seed,circleDaily:c.circleDaily,cday:c.cday};mount();}else toast('Ya has usado tus '+DAILY_TRIES+' intentos de hoy');}
       else if(c.mode==='prac'){ctx={game:c.game,mode:'prac',stake:STAKES[0],rival:c.rival,seed:newSeed()};mount();}
       else if(charge(c.stake)){ctx={game:c.game,mode:c.mode,stake:c.stake,rival:c.rival,fixed:null,seed:newSeed()};render();showVS(ctx,mount);}
       else toast('Saldo insuficiente');
