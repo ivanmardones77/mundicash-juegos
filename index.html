@@ -384,7 +384,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .favbtn:focus-visible,.fname:focus-visible{outline:2px solid #fff;outline-offset:2px;border-radius:8px}
 .inp{all:unset;box-sizing:border-box;width:100%;min-height:48px;padding:0 14px;border-radius:12px;background:rgba(0,16,48,.75);border:2px solid rgba(127,227,255,.45);font-size:17px;font-weight:600;color:#fff}
 .inp::placeholder{color:rgba(255,255,255,.45)}
-.avstack{display:inline-flex;align-items:center;flex:none}
+.cardprev{display:flex;flex-direction:column;align-items:center;gap:6px}.cardprev img{width:62%;max-width:240px;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.45)}.cday{gap:10px}.cdrank{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}.cdrank li{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:12px;background:rgba(0,16,48,.45);font-size:14px}.cdrank li.me{background:rgba(245,197,66,.18);box-shadow:inset 0 0 0 1.5px rgba(245,197,66,.6)}.cdrank .pos{width:24px;text-align:center}.avstack{display:inline-flex;align-items:center;flex:none}
 .avstack>*{margin-left:-10px}.avstack>*:first-child{margin-left:0}
 .avstack .more{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#0B2A5A;border:2px solid #10336A;font-size:11px;font-weight:700}
 .cilist{display:flex;flex-direction:column;gap:6px;max-height:40vh;overflow:auto}
@@ -584,21 +584,15 @@ function monthKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)
 function fresh(){
   var n=Date.now(),H=3600e3;
   return {v:2,cash:2580,gems:3940,level:1,xp:0,prestige:0,reset1:1,
-    stats:{duels:412,wins:239,streak:2,best:9},
-    record:{block:3210,slot:7380,bubble:3410,words:1240,suika:1850,helix:1520,hexa:1680,knife:1340,crowd:1920},last:{},
+    stats:{duels:0,wins:0,streak:0,best:0,stk:0,copa10:0},
+    record:{},last:{},reset2:1,
     owned:{gg:1,revancha:1,corona:1,calavera:1},
-    rival:{name:'PacoBloques',me:5,him:7},fame:true,shopSeen:false,remind:false,
+    rival:{name:'PacoBloques',me:0,him:0},fame:true,shopSeen:false,remind:false,
     dayKey:today(),day:{duels:0,wins:0,stickers:0},claimed:{},
     weekKey:weekKey(),week:{games:{},wins:0,rematch:0,top10:0},
     seasonKey:monthKey(),season:{wins:0},
     copa:{key:today(),best:{},tries:{},bots:{}},
-    hist:[
-      {g:'words',r:'PacoBloques',me:1180,him:1240,win:false,st:'c50',t:n-2*H},
-      {g:'block',r:'RosaRápida',me:3210,him:2880,win:true,st:'c50',t:n-5*H},
-      {g:'bubble',r:'BurbuKing',me:2150,him:2390,win:false,st:'g100',t:n-26*H},
-      {g:'slot',r:'LolaCombos',me:7380,him:6120,win:true,st:'c100',t:n-28*H},
-      {g:'block',r:'—',me:2640,him:null,win:null,st:'prac',t:n-50*H}
-    ]};
+    hist:[]};
 }
 var S;
 function myAlias(){return (S&&S.alias)||ME.alias;}
@@ -607,7 +601,7 @@ var AV_PRICE=400;
 function avSrc(k){return k==='johnny'?IMG.avatar:(window.AVSEL&&window.AVSEL[k])||null;}
 function myAvatar(){return (S&&S.avatar&&avSrc(S.avatar))||IMG.avatar;}
 function avOwned(k){return k==='johnny'||k.charAt(0)==='p'||!!(S.avOwned&&S.avOwned[k]);}
-function load(){try{var raw=localStorage.getItem(KEY);S=raw?JSON.parse(raw):null;}catch(e){S=null;}if(!S||S.v!==2)S=fresh();if(!S.reset1){S.level=1;S.xp=0;S.prestige=0;S.claimed={};S.day={duels:0,wins:0,stickers:0};S.week={games:{},wins:0,rematch:0,top10:0};S.season={wins:0};S.reset1=1;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}roll();if(!S.canallaGift){S.owned.atreves=1;S.owned.tomaya=1;S.owned.revanchaya=1;S.canallaGift=1;}}
+function load(){try{var raw=localStorage.getItem(KEY);S=raw?JSON.parse(raw):null;}catch(e){S=null;}if(!S||S.v!==2)S=fresh();if(!S.reset1){S.level=1;S.xp=0;S.prestige=0;S.claimed={};S.day={duels:0,wins:0,stickers:0};S.week={games:{},wins:0,rematch:0,top10:0};S.season={wins:0};S.reset1=1;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}if(!S.reset2){var st0=S.stats||{};var dd=Math.max(0,(st0.duels||0)-412),ww=Math.max(0,Math.min(dd,(st0.wins||0)-239));S.stats={duels:dd,wins:ww,streak:dd?Math.min(st0.streak||0,ww):0,best:dd?Math.min(Math.max(st0.best||0,0),ww):0,stk:0,copa10:0};var DR={block:3210,slot:7380,bubble:3410,words:1240,suika:1850,helix:1520,hexa:1680,knife:1340,crowd:1920};S.record=S.record||{};for(var dk in DR){if(S.record[dk]===DR[dk])delete S.record[dk];}var DH=['words|1180','block|3210','bubble|2150','slot|7380','block|2640'];S.hist=(S.hist||[]).filter(function(e){return DH.indexOf(e.g+'|'+e.me)<0;});if(S.rival){S.rival.me=Math.max(0,(S.rival.me||0)-5);S.rival.him=Math.max(0,(S.rival.him||0)-7);}S.reset2=1;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}if(S.stats.stk==null)S.stats.stk=0;if(S.stats.copa10==null)S.stats.copa10=0;roll();if(!S.canallaGift){S.owned.atreves=1;S.owned.tomaya=1;S.owned.revanchaya=1;S.canallaGift=1;}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function roll(){
   if(S.dayKey!==today()){S.dayKey=today();S.day={duels:0,wins:0,stickers:0};MIS.d.list.forEach(function(m){delete S.claimed[m.id];});}
@@ -817,15 +811,15 @@ function renderTienda(){
 function renderPerfil(){
   var d=division(S.prestige),st=S.stats,owned=Object.keys(S.owned).length+14;
   var h='<div class="box" style="align-items:center;text-align:center;padding:20px 16px 16px"><button type="button" class="pfp pfpbtn" data-act="pickAvatar" aria-label="Cambiar avatar"><img src="'+myAvatar()+'" alt=""><span class="pfpedit" aria-hidden="true">✎</span></button>'+
-    '<button type="button" class="namebtn" data-act="editAlias" aria-label="Cambiar nombre"><span class="t1" style="font-size:24px">'+esc(myAlias())+'</span><span class="pen" aria-hidden="true">✎</span></button><span class="badge-t">'+ME.title+'</span><span class="small">'+ME.city+' · '+ME.club+'</span>'+
+    '<button type="button" class="namebtn" data-act="editAlias" aria-label="Cambiar nombre"><span class="t1" style="font-size:24px">'+esc(myAlias())+'</span><span class="pen" aria-hidden="true">✎</span></button><span class="badge-t">'+myTitle()+'</span><span class="small">'+socialLine()+'</span>'+
     '<div style="width:100%;display:flex;flex-direction:column;gap:6px;margin-top:6px;text-align:left"><div class="row" style="justify-content:space-between;font-size:13px"><b>Nivel '+S.level+'</b><span class="small">'+fmt(S.xp)+' / 3.000 XP</span></div>'+
     '<div class="bar"><i style="width:'+Math.round(S.xp/3000*100)+'%"></i></div>'+
     '<div class="row" style="justify-content:space-between;font-size:13px;margin-top:4px"><b style="color:var(--gold)">'+d.name+' · '+fmt(S.prestige)+' de prestigio</b><span class="small">'+(d.next?'faltan '+fmt(d.left)+' para '+d.next:'división máxima')+'</span></div></div></div>';
-  h+='<div class="grid2"><div><b>'+fmt(st.duels)+'</b><span>Duelos jugados</span></div><div><b>'+Math.round(st.wins/Math.max(1,st.duels)*100)+' %</b><span>Victorias</span></div><div><b>'+st.best+'</b><span>Mejor racha</span></div><div><b>4,8</b><span>Deportividad (stickers recibidos)</span></div></div>';
+  h+='<div class="grid2"><div><b>'+fmt(st.duels)+'</b><span>Duelos jugados</span></div><div><b>'+Math.round(st.wins/Math.max(1,st.duels)*100)+' %</b><span>Victorias</span></div><div><b>'+st.best+'</b><span>Mejor racha</span></div><div><b>'+fmt(retoWins())+'</b><span>Retos ganados a amigos</span></div></div>';
   h+=friendsHtml();
   h+=circlesHtml();
   h+='<div class="sec"><span>Récords</span></div><div class="grid2">'+GKEYS.map(function(k){return '<div class="rec"><img src="'+IMG[k]+'" alt=""><div><span>'+GAMES[k].short+'</span><b style="font-size:20px">'+fmt(S.record[k]||0)+'</b></div></div>';}).join('')+'</div>';
-  h+='<div class="sec"><span>Vitrina</span></div><div class="troph"><div>'+medal3('trofeo')+'Copa diaria ×12</div><div>'+medal3('liga')+'Liga Oro</div><div>'+medal3('racha')+'Racha de '+st.best+'</div><div>'+medal3('medalla')+'Semifinal semanal</div></div>';
+  h+='<div class="sec"><span>Vitrina</span></div><div class="troph"><div>'+medal3('trofeo')+'Top 10 en copa ×'+fmt(st.copa10||0)+'</div><div>'+medal3('liga')+'Liga '+d.tier+'</div><div>'+medal3('racha')+'Mejor racha: '+st.best+'</div><div>'+medal3('medalla')+'Stickers enviados: '+fmt(st.stk||0)+'</div></div>';
   h+='<a class="mc w" href="#tienda" style="min-height:0;color:#fff">'+medal3('album')+'<span class="mid"><span class="mt"><b>Álbum de stickers</b></span>'+bar(owned,40)+'</span><span class="cta">Tienda</span></a>';
   h+='<div class="box alt"><div class="row"><div class="grow"><div id="fameL" style="font-weight:600;font-size:14px">Salir en el salón de la fama</div><div class="small" style="font-size:12px">Solo tu alias y avatar, nunca tu nombre ni lo que ganas.</div></div><button class="switch" type="button" role="switch" aria-checked="'+(!!S.fame)+'" aria-labelledby="fameL" data-act="fame"></button></div></div>';
   h+='<p class="note">+18 · Juega con responsabilidad</p>';
@@ -854,16 +848,53 @@ function needAlias(next,force){if(S.alias&&!force){next();return;}aliasNext=next
     '<button class="cta full" type="button" data-act="saveAlias">Guardar</button></div>','Tu alias');
   setTimeout(function(){var i=$('aliasIn');if(i){i.focus();i.addEventListener('keydown',function(e){if(e.key==='Enter')saveAlias();});}},50);}
 function saveAlias(){var v=($('aliasIn')&&$('aliasIn').value||'').trim().replace(/\s+/g,' ');if(v.length<2){toast('Escribe al menos 2 letras');return;}S.alias=v.slice(0,16);save();renderHdr();closeModal();var n=aliasNext;aliasNext=null;if(n)setTimeout(n,60);}
-function shareModal(title,text,url,first){
-  pendingShare={text:text,url:url,first:first};
+
+function loadImg(src){return new Promise(function(ok){if(!src){ok(null);return;}var i=new Image();i.onload=function(){ok(i);};i.onerror=function(){ok(null);};i.src=src;});}
+function rrect(x,X,Y,W,H,R){x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+W,Y,X+W,Y+H,R);x.arcTo(X+W,Y+H,X,Y+H,R);x.arcTo(X,Y+H,X,Y,R);x.arcTo(X,Y,X+W,Y,R);x.closePath();}
+function fitText(x,t,max,size,weight,fam){var f=size;do{x.font=weight+' '+f+'px '+fam;f-=4;}while(x.measureText(t).width>max&&f>20);}
+function makeCard(o){
+  var fr=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();
+  return fr.then(function(){return Promise.all([loadImg(IMG[o.g]),loadImg(myAvatar()),loadImg(IMG.logo),o.vs&&o.vs.a&&avSrc(o.vs.a)?loadImg(avSrc(o.vs.a)):null]);}).then(function(im){
+    var W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext('2d'),F="Jost, Inter, sans-serif";
+    var gr=x.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#0B2E78');gr.addColorStop(.5,'#141A5E');gr.addColorStop(1,'#3B0F63');x.fillStyle=gr;x.fillRect(0,0,W,H);
+    var rg=x.createRadialGradient(W/2,470,30,W/2,470,640);rg.addColorStop(0,'rgba(127,227,255,.38)');rg.addColorStop(1,'rgba(127,227,255,0)');x.fillStyle=rg;x.fillRect(0,0,W,H);
+    for(var i=0;i<70;i++){var px=(i*733)%W,py=(i*1291+i*i*7)%H;x.fillStyle='rgba(255,255,255,'+(0.12+(i*31%40)/100)+')';x.beginPath();x.arc(px,py,1.5+(i%3),0,7);x.fill();}
+    if(im[2]){var lh=120,lw=im[2].width*lh/im[2].height;x.drawImage(im[2],W/2-lw/2,52,lw,lh);}
+    x.textAlign='center';x.textBaseline='alphabetic';
+    x.fillStyle='#F5C542';fitText(x,o.eye.toUpperCase(),W-120,42,'700',F);x.fillText(o.eye.toUpperCase(),W/2,240);
+    if(im[0]){x.save();x.shadowColor='rgba(0,0,0,.45)';x.shadowBlur=40;x.shadowOffsetY=16;rrect(x,W/2-160,280,320,320,64);x.fillStyle='#0B2E78';x.fill();x.restore();
+      x.save();rrect(x,W/2-160,280,320,320,64);x.clip();x.drawImage(im[0],W/2-160,280,320,320);x.restore();}
+    x.fillStyle='#fff';fitText(x,GAMES[o.g].short,W-160,66,'700',F);x.fillText(GAMES[o.g].short,W/2,682);
+    function face(img,cx,cy,r,ring){x.save();x.beginPath();x.arc(cx,cy,r+8,0,7);x.fillStyle=ring;x.fill();x.beginPath();x.arc(cx,cy,r,0,7);x.clip();if(img)x.drawImage(img,cx-r,cy-r,2*r,2*r);else{x.fillStyle='#2B5FD0';x.fillRect(cx-r,cy-r,2*r,2*r);}x.restore();}
+    function scoreAt(v,cx,y,size,col){x.save();fitText(x,fmt(v),460,size,'800',F);x.lineWidth=14;x.strokeStyle='rgba(10,14,60,.85)';x.lineJoin='round';x.strokeText(fmt(v),cx,y);x.fillStyle=col;x.fillText(fmt(v),cx,y);x.restore();}
+    var me=myAlias();
+    if(o.vs){
+      face(im[1],290,820,92,o.score>o.vs.s?'#F5C542':'#7FE3FF');face(im[3],790,820,92,o.score>o.vs.s?'#7FE3FF':'#F5C542');
+      x.fillStyle='#fff';fitText(x,me,380,44,'700',F);x.fillText(me,290,960);fitText(x,o.vs.n,380,44,'700',F);x.fillText(o.vs.n,790,960);
+      scoreAt(o.score,290,1060,92,o.score>o.vs.s?'#F5C542':'#fff');scoreAt(o.vs.s,790,1060,92,o.score>o.vs.s?'#fff':'#F5C542');
+      x.fillStyle='#FF6FB5';x.font='800 72px '+F;x.fillText('VS',W/2,850);
+    } else {
+      face(im[1],W/2,812,96,'#F5C542');x.fillStyle='#fff';fitText(x,me,W-200,48,'700',F);x.fillText(me,W/2,962);
+      scoreAt(o.score,W/2,1092,150,'#F5C542');
+    }
+    x.fillStyle='#fff';fitText(x,o.line,W-120,54,'700',F);x.fillText(o.line,W/2,1190);
+    x.fillStyle='rgba(185,225,255,.85)';x.font='500 34px Inter, sans-serif';x.fillText(o.foot||'Misma partida para ti · abre el enlace y juega',W/2,1278);
+    return new Promise(function(ok){c.toBlob(function(b){ok(b?new File([b],'mundicash-'+o.g+'.png',{type:'image/png'}):null);},'image/png');});
+  });
+}
+function shareModal(title,text,url,first,card){
+  var ps=pendingShare={text:text,url:url,first:first,file:null};
   var wa='https://wa.me/?text='+encodeURIComponent(text+'\n'+url);
   openModal('<div style="display:flex;flex-direction:column;gap:12px"><div class="t1">'+title+'</div>'+
-    '<div class="box alt" style="font-size:14px;line-height:1.45">'+esc(text)+'<br><span class="small" style="word-break:break-all">'+esc(url.length>70?url.slice(0,70)+'…':url)+'</span></div>'+
-    stickerRowHtml(pendingShare.first||'reto','data-wa-share')+
-    '<a class="cta full" href="'+wa+'" target="_blank" rel="noopener" style="background:linear-gradient(180deg,#3BE07A,#25D366 55%,#1DA851);box-shadow:inset 0 -3px 0 #128C3E">Enviar por WhatsApp</a>'+
+    (card?'<div class="cardprev" id="cardPrev"><span class="small">Preparando tu tarjeta…</span></div>':'')+'<div class="box alt" style="font-size:14px;line-height:1.45">'+esc(text)+'<br><span class="small" style="word-break:break-all">'+esc(url.length>70?url.slice(0,70)+'…':url)+'</span></div>'+
+    (card?'':stickerRowHtml(pendingShare.first||'reto','data-wa-share'))+
+    '<a id="waBtn" class="cta full" href="'+wa+'" target="_blank" rel="noopener" style="background:linear-gradient(180deg,#3BE07A,#25D366 55%,#1DA851);box-shadow:inset 0 -3px 0 #128C3E">Enviar por WhatsApp</a>'+
     (navigator.share?'<button class="cta ghost full" type="button" data-act="shareNative">Otras apps…</button>':'')+
     '<button class="cta ghost full" type="button" data-act="copyLink">Copiar enlace</button>'+
-    '<p class="note">Quien abra el enlace juega exactamente la misma partida que tú.</p></div>','Enviar reto','bottom');
+    '<p class="note">Quien abra el enlace juega exactamente la misma partida que tú.</p>'+(card?stickerRowHtml(pendingShare.first||'reto','data-wa-share').replace('Acompáñalo de un sticker','O mándalo con un sticker en vez de la tarjeta'):'')+'</div>','Enviar reto','bottom');
+  var wb=$('waBtn');if(wb)wb.addEventListener('click',function(e){var f=ps.file;if(f&&navigator.canShare&&navigator.canShare({files:[f]})){e.preventDefault();navigator.share({files:[f],text:ps.text+'\n'+ps.url}).catch(function(){});}});
+  if(card)makeCard(card).then(function(f){if(pendingShare!==ps||!f)return;ps.file=f;var el=$('cardPrev');if(!el)return;var u=URL.createObjectURL(f),canF=navigator.canShare&&navigator.canShare({files:[f]});
+    el.innerHTML='<img src="'+u+'" alt="Tarjeta con tu resultado">'+(canF?'<span class="small">Se enviará con esta imagen</span>':'<a class="small" href="'+u+'" download="'+f.name+'" style="color:#7FE3FF">Guardar imagen para adjuntarla</a>');}).catch(function(){var el=$('cardPrev');if(el)el.remove();});
 }
 function copyText(t){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast('Enlace copiado');},function(){fallbackCopy(t);});}else fallbackCopy(t);}
 function fallbackCopy(t){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('Enlace copiado');}catch(e){toast('No se ha podido copiar');}a.remove();}
@@ -875,7 +906,7 @@ function sendReto(){
     var url=baseUrl()+'#reto='+enc({v:1,id:id,g:g,seed:seed,n:me,s:sc,a:S.avatar||'johnny'});
     var txt=cc?'🔥 Reto para «'+cc.name+'»: '+me+' ha hecho '+fmt(sc)+' en '+GAMES[g].short+'. Misma partida para todos. ¿Quién me supera?':(fr?fr.n+', ':'')+me+' te reta en '+GAMES[g].short+': '+fmt(sc)+' puntos. Misma partida para los dos. ¿Me superas? 💪';
     if(fr&&fr.ph){window.open('https://wa.me/'+fr.ph+'?text='+encodeURIComponent(txt+'\n'+url),'_blank','noopener');toast('Abriendo el chat de '+fr.n+' en WhatsApp');return;}
-    shareModal(cc?'Reta al círculo «'+esc(cc.name)+'»':(fr?'Reta a '+esc(fr.n):'Reta a un amigo'),txt,url);
+    shareModal(cc?'Reta al círculo «'+esc(cc.name)+'»':(fr?'Reta a '+esc(fr.n):'Reta a un amigo'),txt,url,'reto',{g:g,score:sc,eye:cc?'Reto para «'+cc.name+'»':'Te reto',line:cc?'¿Quién me supera?':'¿Me superas?'});
   });
 }
 function sendResp(){
@@ -883,7 +914,7 @@ function sendResp(){
   needAlias(function(){
     var me=myAlias(),url=baseUrl()+'#resp='+enc({v:1,id:r.id,g:r.g,seed:r.seed,n:me,s:sc,a:S.avatar||'johnny',to:{n:r.them,s:r.his}});
     var txt=sc>r.his?me+' ha superado tu reto en '+GAMES[r.g].short+': '+fmt(sc)+' contra tus '+fmt(r.his)+'. 😎 ¿Revancha?':me+' ha jugado tu reto en '+GAMES[r.g].short+': '+fmt(sc)+' contra tus '+fmt(r.his)+'. Esta vez ganas tú…';
-    shareModal('Contesta a '+esc(r.them),txt,url,sc>r.his?'gane':'perdi');
+    shareModal('Contesta a '+esc(r.them),txt,url,sc>r.his?'gane':'perdi',{g:r.g,score:sc,vs:{n:r.them,s:r.his,a:(friends()[fkey(r.them)]||{}).a},eye:sc>r.his?'Reto superado':'Reto jugado',line:sc>r.his?'Te he ganado. ¿Revancha? 😎':'Esta vez ganas tú…',foot:'Misma partida para los dos'});
   });
 }
 function sendRespWith(stId){
@@ -897,6 +928,7 @@ function sendRespWith(stId){
 function incoming(kind,p){
   if(kind==='amigo'){incomingFriend(p);return;}
   if(kind==='circulo'){incomingCircle(p);return;}
+  if(kind==='cdia'){incomingDaily(p);return;}
   if(!p||!GAMES[p.g]||!p.seed||p.s==null||!p.n)return;
   var n=String(p.n).slice(0,16),G0=GAMES[p.g];addFriend(n,p.a);var fa=friendIni(n);
   if(kind==='reto'){
@@ -960,7 +992,7 @@ function shareSticker(id,text,url){
   if(!f){toast('Este sticker no se puede enviar');return;}
   if(navigator.canShare&&navigator.canShare({files:[f]})){
     var data={files:[f]};if(msg)data.text=msg;
-    navigator.share(data).then(function(){S.day.stickers++;save();}).catch(function(){});
+    navigator.share(data).then(function(){S.day.stickers++;S.stats.stk++;save();}).catch(function(){});
     return;
   }
   /* ordenador o navegador sin compartir archivos: se descarga y se abre WhatsApp */
@@ -986,6 +1018,14 @@ function friendIni(n){var f=friends()[fkey(n)];return f&&f.a&&avSrc(f.a)?'@'+f.a
 function h2h(n){var w=0,l=0,k=fkey(n),outIds={};retos().forEach(function(r){if(r.dir==='out')outIds[r.id]=1;});retos().forEach(function(r){
   if(r.dir==='in'&&!outIds[r.id]&&fkey(r.them)===k&&r.mine!=null){if(r.mine>r.his)w++;else l++;}
   if(r.dir==='out')r.ans.forEach(function(a){if(fkey(a.n)===k){if(r.mine>a.s)w++;else l++;}});});return {w:w,l:l};}
+
+function retoWins(){var w=0;Object.keys(friends()).forEach(function(k){w+=h2h(friends()[k].n).w;});return w;}
+function myTitle(){var L=S.level,t=L>=30?'Leyenda':L>=20?'Maestro':L>=10?'Veterano':L>=5?'Aspirante':'Novato';
+  var best=null,bv=0;GKEYS.forEach(function(g){var r=S.record[g];if(r&&GAMES[g].par){var v=r/GAMES[g].par;if(v>bv){bv=v;best=g;}}});
+  return t+(best?' de '+GAMES[best].short:'');}
+function socialLine(){var nf=Object.keys(friends()).length,nc=Object.keys(circles()).length;
+  if(!nf&&!nc)return 'Invita a tus amigos y empieza a picarte';
+  return nf+(nf===1?' rival':' rivales')+(nc?' · '+nc+(nc===1?' círculo':' círculos'):'');}
 function avatarPicker(){
   var keys=['johnny','p1','p2','p3','p4','p5','p6','p7','p8','p9','x1','x2','x3','x4','x5','x6','x7','x8','x9'],cur=S.avatar||'johnny';
   var h='<div style="display:flex;flex-direction:column;gap:12px"><div class="small">Tus amigos lo verán en tus retos y en los rankings.</div><div class="avgrid">';
@@ -1125,6 +1165,7 @@ function circleBoard(c){
   GKEYS.forEach(function(g){var best=null;
     function cand(n,sc){if(sc==null)return;if(!best||sc>best.s)best={n:n,s:sc};}
     if(S.record[g])cand(myAlias(),S.record[g]);
+    if(c.daily&&c.daily.s&&cdaily(c).g===g){var ds=c.daily.s;Object.keys(ds).forEach(function(k){if(mem[k]&&k!==me)cand(mem[k],ds[k].s);});}
     retos().forEach(function(r){if(r.g!==g)return;
       if(r.dir==='in'&&mem[fkey(r.them)])cand(mem[fkey(r.them)],r.his);
       if(r.dir==='out')r.ans.forEach(function(a){if(mem[fkey(a.n)])cand(mem[fkey(a.n)],a.s);});});
@@ -1134,7 +1175,7 @@ function circleBoard(c){
 function circleModal(id){
   var c=circles()[id];if(!c)return;var me=fkey(myAlias());
   var h='<div style="display:flex;flex-direction:column;gap:12px"><div class="row" style="gap:10px">'+avStack(c.members,36)+'<span class="small">'+c.members.length+' miembros · creado por '+esc(c.owner||'—')+'</span></div>';
-  h+='<button class="cta full shine" type="button" data-ci-reto="'+c.id+'">Retar al círculo</button>';
+  h+=dailyHtml(c);h+='<button class="cta full" type="button" data-ci-reto="'+c.id+'">Retar al círculo con otro juego</button>';
   h+='<div class="sec" style="margin:0"><span>Miembros</span></div><ul class="list">';
   c.members.forEach(function(m){var isMe=fkey(m.n)===me,r=isMe?null:h2h(m.n);
     h+='<li class="hrow frow">'+(isMe?'<img src="'+myAvatar()+'" alt="" style="width:40px;height:40px;border-radius:50%">':av(m.a&&avSrc(m.a)?'@'+m.a:initials(m.n),fcol(m.n),40))+
@@ -1149,6 +1190,35 @@ function circleModal(id){
   h+='<button class="cta ghost full" type="button" data-ci-share="'+c.id+'">Invitar a más gente</button><button class="cta ghost full" type="button" data-ci-leave="'+c.id+'">Salir del círculo</button></div>';
   openModal(h,'«'+c.name+'»','bottom');
 }
+
+function hstr(t){var h=2166136261;for(var i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function cdaily(c){var d=today(),h=hstr(c.id+'|'+d);if(!c.daily||c.daily.d!==d)c.daily={d:d,s:{}};return {d:d,g:GKEYS[h%GKEYS.length],seed:(h%2147480000)+7,sc:c.daily.s};}
+function cdRows(c){var D=cdaily(c),me=fkey(myAlias());return Object.keys(D.sc).map(function(k){var v=D.sc[k];return {n:v.n,a:v.a,s:v.s,me:k===me};}).sort(function(a,b){return b.s-a.s;});}
+function cdPos(c){var L=cdRows(c);for(var i=0;i<L.length;i++)if(L[i].me)return {pos:i+1,of:L.length};return null;}
+function dailyHtml(c,compact){var D=cdaily(c),L=cdRows(c),mine=D.sc[fkey(myAlias())];
+  var h='<div class="box alt cday"><div class="row" style="gap:12px"><img src="'+IMG[D.g]+'" alt="" style="width:56px;height:56px;border-radius:12px"><div class="grow"><div class="eye" style="color:var(--gold)">Reto del día · acaba a las 00:00</div><div class="t2" style="font-size:17px">'+GAMES[D.g].short+'</div><div class="small">La misma partida para todo el círculo</div></div></div>';
+  h+=L.length?'<ol class="cdrank">'+L.map(function(x,i){return '<li class="'+(x.me?'me':'')+'"><b class="pos">'+(i===0?'👑':(i+1))+'</b>'+av(x.me?'@'+(S.avatar||'johnny'):(x.a&&avSrc(x.a)?'@'+x.a:initials(x.n)),fcol(x.n),28)+'<span class="grow">'+esc(x.n)+(x.me?' (tú)':'')+'</span><b>'+fmt(x.s)+'</b></li>';}).join('')+'</ol>':'<div class="small">Nadie ha jugado todavía. ¡Estrena el marcador!</div>';
+  h+='<div class="row" style="gap:8px"><button class="cta grow'+(mine?'':' shine')+'" type="button" data-ci-daily="'+c.id+'">'+(mine?'Mejorar mi marca':'Jugar ahora')+'</button>'+(mine?'<button class="cta gold grow" type="button" data-ci-dshare="'+c.id+'">Compartir</button>':'')+'</div></div>';
+  return h;}
+function playDaily(id){var c=circles()[id];if(!c)return;needAlias(function(){var D=cdaily(c);closeModal();launch(D.g,'prac',STAKES[0],null,null,D.seed,{circleDaily:id,cday:D.d});});}
+function dailyPosTxt(){var c=ctx&&circles()[ctx.circleDaily];if(!c)return 'Reto del día';var p=cdPos(c);if(!p)return 'Reto del día';return p.pos===1?'¡Vas primero en «'+esc(c.name)+'»!':'Vas '+p.pos+'º de '+p.of+' en «'+esc(c.name)+'»';}
+function shareDaily(id){var c=circles()[id];if(!c)return;
+  needAlias(function(){var D=cdaily(c),m=D.sc[fkey(myAlias())];if(!m){toast('Juega primero el reto del día');return;}
+    var L=cdRows(c),p=cdPos(c),me=myAlias();
+    var url=baseUrl()+'#cdia='+enc({v:1,id:c.id,name:c.name,o:c.owner,d:D.d,n:me,a:S.avatar||'johnny',s:m.s,sc:L.slice(0,12).map(function(x){return {n:x.n,a:x.a||'',s:x.s};})});
+    var txt='📅 Reto del día de «'+c.name+'»: '+me+' ha hecho '+fmt(m.s)+' en '+GAMES[D.g].short+(p&&p.pos===1?' y va primero 👑':(p?' y va '+p.pos+'º':''))+'. Hoy todos jugamos la misma partida. ¿Quién me supera?';
+    shareModal('Reto del día · «'+esc(c.name)+'»',txt,url,'reto',{g:D.g,score:m.s,eye:'Reto del día · «'+c.name+'»',line:p&&p.pos===1?'Voy primero. ¿Quién me supera? 👑':'Voy '+(p?p.pos:1)+'º. ¿Me superas?',foot:'Hoy todo el círculo juega la misma partida'});
+  });}
+function incomingDaily(p){
+  if(!p||!p.id||!p.d||!p.n)return;var c=circles()[p.id];
+  var all=[{n:p.n,a:p.a,s:p.s}].concat(p.sc||[]);
+  if(!c){incomingCircle({id:p.id,name:p.name,o:p.o,m:all.map(function(x){return {n:x.n,a:x.a};})});return;}
+  if(p.d!==today()){toast('Ese reto del día ya terminó: hoy hay uno nuevo');circleModal(c.id);return;}
+  var D=cdaily(c),me=fkey(myAlias());
+  all.forEach(function(x){if(!x||!x.n||x.s==null)return;var n=String(x.n).slice(0,16),k=fkey(n);if(k===me&&S.alias)return;var cur=D.sc[k];if(!cur||+x.s>cur.s)D.sc[k]={n:n,a:x.a||'',s:+x.s};
+    if(!c.members.some(function(m){return fkey(m.n)===k;}))c.members.push({n:n,a:x.a||''});if(k!==me)addFriend(n,x.a);});
+  save();render();circleModal(c.id);toast(String(p.n).slice(0,16)+' ha jugado el reto del día: '+fmt(+p.s));
+}
 function circleRetoPicker(id){
   var c=circles()[id];if(!c)return;
   var h='<div style="display:flex;flex-direction:column;gap:10px"><div class="t1">¿A qué retas a «'+esc(c.name)+'»?</div><div class="small">Juegas una partida y al acabar mandas el reto al grupo: todos jugarán la misma partida.</div><div class="games" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">';
@@ -1160,7 +1230,7 @@ function circlesHtml(){
   var h='<div class="sec"><span>Círculos de rivales</span><button class="gbtn" type="button" data-act="newCircle" style="height:30px;font-size:12px">+ Crear</button></div>';
   if(!L.length)return h+'<div class="box alt" style="text-align:center"><span class="small">Crea un círculo con tu grupo (la peña, los del curro…) y retadlo entero con una sola partida.</span></div>';
   return h+L.map(function(c){var rows=circleBoard(c),mine=rows.filter(function(x){return x.me;}).length;
-    return '<div class="mc w" style="min-height:0">'+avStack(c.members,34)+'<div class="mid" style="min-width:0"><span class="t2" style="font-size:16px">«'+esc(c.name)+'»</span><span class="small" style="color:#fff">'+c.members.length+' miembros'+(rows.length?' · lideras '+mine+' de '+rows.length+' juegos':'')+'</span></div>'+
+    return '<div class="mc w" style="min-height:0">'+avStack(c.members,34)+'<div class="mid" style="min-width:0"><span class="t2" style="font-size:16px">«'+esc(c.name)+'»</span><span class="small" style="color:#fff">'+c.members.length+' miembros'+(rows.length?' · lideras '+mine+' de '+rows.length+' juegos':'')+'</span><span class="small" style="color:var(--gold)">📅 Hoy: '+GAMES[cdaily(c).g].short+(cdPos(c)?' · vas '+cdPos(c).pos+'º':' · sin jugar')+'</span></div>'+
       '<div class="res" style="flex-direction:column;gap:6px"><button class="cta" type="button" data-ci-open="'+c.id+'" style="min-height:32px;font-size:12px;padding:0 12px">Ver</button><button class="cta gold" type="button" data-ci-reto="'+c.id+'" style="min-height:32px;font-size:12px;padding:0 12px">Retar</button></div></div>';}).join('');
 }
 
@@ -1208,7 +1278,7 @@ function mount(){
   stage.innerHTML='';$('sheet').hidden=true;clearTimeout(sheetTimer);ctx.ended=false;
   var f=document.createElement('iframe');f.title=GAMES[current].name;f.setAttribute('allow','autoplay; fullscreen');f.srcdoc=withSeed(source(current),ctx.seed);
   f.addEventListener('load',function(){try{f.contentWindow.focus();}catch(e){}});stage.appendChild(f);frame=f;
-  var lab=ctx.mode==='copa'?'Copa diaria · intento '+(S.copa.tries[current]||0)+' de 3':(ctx.mode==='prac'?'Práctica':ctx.mode==='reto'?'Reto de '+ctx.rival.name+' · supera '+fmt(ctx.fixed):(ctx.mode==='rematch'?'Revancha contra '+ctx.rival.name:'Duelo contra '+ctx.rival.name+' · '+(ctx.stake.cur==='gems'?fmt(ctx.stake.fee)+' diamantes':money(ctx.stake.fee))));
+  var lab=ctx.mode==='copa'?'Copa diaria · intento '+(S.copa.tries[current]||0)+' de 3':(ctx.mode==='prac'?(ctx.circleDaily?'Reto del día':'Práctica'):ctx.mode==='reto'?'Reto de '+ctx.rival.name+' · supera '+fmt(ctx.fixed):(ctx.mode==='rematch'?'Revancha contra '+ctx.rival.name:'Duelo contra '+ctx.rival.name+' · '+(ctx.stake.cur==='gems'?fmt(ctx.stake.fee)+' diamantes':money(ctx.stake.fee))));
   $('gameTitle').innerHTML=GAMES[current].name+'<span class="vs">'+lab+'</span>';
 }
 function newSeed(){return 1+Math.floor(Math.random()*2147480000);}
@@ -1250,19 +1320,20 @@ function onEnd(score){
     if(win&&ctx.stake.cur==='cash'){S.cash+=ctx.stake.prize;prize='+'+money(ctx.stake.prize);}
     if(ctx.mode==='rematch'){if(win){S.rival.me++;S.week.rematch=1;}else S.rival.him++;}
   }
-  if(copa){var before=copaPos(g);if(S.copa.best[g]==null||score>S.copa.best[g])S.copa.best[g]=score;var p=copaPos(g);if(p<=10)S.week.top10=1;entry.pos=p;copaLine=(before&&p<before?'Subes al '+p+'º':'Vas '+p+'º')+' de 50 en la copa';xp=30;pr=10;}
+  if(copa){var before=copaPos(g);if(S.copa.best[g]==null||score>S.copa.best[g])S.copa.best[g]=score;var p=copaPos(g);if(p<=10){S.week.top10=1;if(!S.copaTopDay||S.copaTopDay!==today()){S.copaTopDay=today();S.stats.copa10++;}}entry.pos=p;copaLine=(before&&p<before?'Subes al '+p+'º':'Vas '+p+'º')+' de 50 en la copa';xp=30;pr=10;}
   addXP(xp);S.prestige+=pr;
   S.hist.unshift(entry);if(S.hist.length>40)S.hist.length=40;
   save();
   if(ctx.mode==='reto'&&ctx.retoKey){var rr=retoByKey(ctx.retoKey);if(rr&&(rr.mine==null||score>rr.mine)){rr.mine=score;save();}}
+  if(ctx.circleDaily){var cD=circles()[ctx.circleDaily];if(cD&&ctx.cday===today()){var DD=cdaily(cD),kk=fkey(myAlias());if(!DD.sc[kk]||score>DD.sc[kk].s)DD.sc[kk]={n:myAlias(),a:S.avatar||'johnny',s:score};save();}}
   ctx.result={score:score,rs:rs,win:win,xp:xp,pr:pr,newRec:newRec,copaLine:copaLine,prize:prize,sent:false};
   sheetTimer=setTimeout(showSheet,1500);
 }
 function showSheet(){
   if(!ctx||!ctx.result)return;
   var r=ctx.result,duel=r.win!=null,R2=ctx.rival;
-  var head=duel?(r.win?'¡Has ganado a '+R2.name+'!':'Te ha ganado por '+fmt(Math.abs(r.score-r.rs))):(ctx.mode==='copa'?'Intento registrado':'Partida de práctica');
-  var h='<div class="row"><div class="grow"><div class="eye" style="color:'+(r.win===false?'#FF9A6B':'#5BE07D')+'">'+GAMES[current].short+' · '+(ctx.mode==='copa'?'Copa diaria':(ctx.mode==='prac'?'Práctica':(ctx.mode==='rematch'?'Revancha':'Duelo')))+'</div><div class="t1">'+head+'</div></div>'+
+  var head=duel?(r.win?'¡Has ganado a '+R2.name+'!':'Te ha ganado por '+fmt(Math.abs(r.score-r.rs))):(ctx.mode==='copa'?'Intento registrado':(ctx.circleDaily?dailyPosTxt():'Partida de práctica'));
+  var h='<div class="row"><div class="grow"><div class="eye" style="color:'+(r.win===false?'#FF9A6B':'#5BE07D')+'">'+GAMES[current].short+' · '+(ctx.mode==='copa'?'Copa diaria':(ctx.mode==='prac'?(ctx.circleDaily?'Reto del día':'Práctica'):(ctx.mode==='rematch'?'Revancha':'Duelo')))+'</div><div class="t1">'+head+'</div></div>'+
         '<button class="gbtn" type="button" data-act="hideSheet" aria-label="Ver mi partida">'+ic('x')+'</button></div>';
   h+=duel?'<div class="vsrow"><div><b>'+fmt(r.score)+'</b><br><span>Tú'+(r.newRec?' · ¡récord!':'')+'</span></div><span class="small">vs</span><div><b>'+fmt(r.rs)+'</b><br><span>'+R2.name+'</span></div></div>'
          :'<div class="vsrow"><div style="grid-column:1/4"><b>'+fmt(r.score)+'</b><br><span>Tu puntuación'+(r.newRec?' · ¡récord!':'')+'</span></div></div>';
@@ -1270,7 +1341,8 @@ function showSheet(){
   if(duel&&ctx.mode==='reto'){h+=stickerRowHtml(r.win?'gane':'perdi','data-wa-resp').replace('Acompáñalo de un sticker','Pícale con un sticker por WhatsApp');}
   else if(duel){var own=ownedOrdered(r.win?'gane':'perdi');
     h+='<div><div class="small" style="margin-bottom:6px">'+(r.sent?'Sticker enviado a '+R2.name:'Envía un sticker a '+R2.name)+'</div><div class="sendrow">'+own.map(function(s){return '<button type="button" data-send="'+s.id+'"'+(r.sent?' disabled':'')+'>'+sticker(s,52)+s.name+'</button>';}).join('')+'</div></div>';}
-  if(ctx.seed)h+=(ctx.mode==='reto'?'<button class="cta gold full" type="button" data-act="shareResp">Contestar a '+R2.name+'</button>':'<button class="cta gold full" type="button" data-act="shareReto">'+(ctx.forCircle&&circles()[ctx.forCircle]?'Retar al círculo «'+esc(circles()[ctx.forCircle].name)+'»':(ctx.forFriend&&S.friends&&S.friends[ctx.forFriend]?'Retar a '+esc(S.friends[ctx.forFriend].n)+' con esta partida':'Retar a un amigo con esta partida'))+'</button>');
+  if(ctx.circleDaily&&circles()[ctx.circleDaily])h+='<button class="cta gold full" type="button" data-act="shareDaily">Compartir en «'+esc(circles()[ctx.circleDaily].name)+'»</button>';
+  else if(ctx.seed)h+=(ctx.mode==='reto'?'<button class="cta gold full" type="button" data-act="shareResp">Contestar a '+R2.name+'</button>':'<button class="cta gold full" type="button" data-act="shareReto">'+(ctx.forCircle&&circles()[ctx.forCircle]?'Retar al círculo «'+esc(circles()[ctx.forCircle].name)+'»':(ctx.forFriend&&S.friends&&S.friends[ctx.forFriend]?'Retar a '+esc(S.friends[ctx.forFriend].n)+' con esta partida':'Retar a un amigo con esta partida'))+'</button>');
   h+='<div class="row"><button class="cta grow" type="button" data-act="again">'+(ctx.mode==='copa'||ctx.mode==='reto'?'Otro intento':(duel?'Revancha':'Jugar otra'))+'</button><button class="cta ghost grow" type="button" data-act="toLobby">Salir</button></div>';
   $('sheetIn').innerHTML=h;$('sheet').hidden=false;
   if(r.shown)return;r.shown=true;
@@ -1463,7 +1535,7 @@ window.addEventListener('blur',function(){release({type:'pointercancel'});});
 document.addEventListener('click',function(e){if(e.detail===0){var b=e.target.closest&&e.target.closest(PUSH);if(b&&!pushOff(b))spring(b,b.matches('a.mc,.feat,.opt'));}},true);
 document.addEventListener('click',function(e){
   if(vsBusy)return;
-  var t=e.target.closest('[data-act],[data-go],[data-pick],[data-stake],[data-claim],[data-comp],[data-rank],[data-copa-open],[data-copa-play],[data-shop],[data-st],[data-buy],[data-pack],[data-send],[data-replay],[data-reto-play],[data-reto-new],[data-reto-resend],[data-wa],[data-wa-share],[data-wa-resp],[data-stcat],[data-avsel],[data-fr-edit],[data-fr-fav],[data-fr-reto],[data-fr-game],[data-ci-open],[data-ci-reto],[data-ci-game],[data-ci-share],[data-ci-leave]');
+  var t=e.target.closest('[data-act],[data-go],[data-pick],[data-stake],[data-claim],[data-comp],[data-rank],[data-copa-open],[data-copa-play],[data-shop],[data-st],[data-buy],[data-pack],[data-send],[data-replay],[data-reto-play],[data-reto-new],[data-reto-resend],[data-wa],[data-wa-share],[data-wa-resp],[data-stcat],[data-avsel],[data-fr-edit],[data-fr-fav],[data-fr-reto],[data-fr-game],[data-ci-open],[data-ci-reto],[data-ci-game],[data-ci-share],[data-ci-leave],[data-ci-daily],[data-ci-dshare]');
   if(!t)return;var a=t.dataset;
   if(a.go){closeModal();if(location.hash==='#'+a.go)route();else location.hash=a.go;return;}
   if(a.pick){stakePicker(a.pick);return;}
@@ -1479,10 +1551,12 @@ document.addEventListener('click',function(e){
   if(a.buy){var s=sById(a.buy);if(s&&!S.owned[s.id]&&S.gems>=s.price){var gb=S.gems;S.gems-=s.price;S.owned[s.id]=1;save();toast('«'+s.name+'» añadido a tu álbum');render();spend('gems',gb,S.gems);
     var sel=document.querySelector('.stk[aria-pressed="true"] .sticker');anim(sel,[{transform:'scale(1) rotate(0)'},{transform:'scale(1.3) rotate(-12deg)',offset:.4},{transform:'scale(.95) rotate(4deg)',offset:.75},{transform:'none'}],{duration:520,easing:'ease-out'});}return;}
   if(a.pack){var p=PACKS[+a.pack];if(S.cash>=p.c){var r1=t.getBoundingClientRect(),cb=S.cash,gb2=S.gems;S.cash-=p.c;S.gems+=p.g;save();toast('Has comprado '+fmt(p.g)+' diamantes');render();spend('cash',cb,S.cash);flyReward(r1,'gems',gb2,S.gems,'+'+fmt(p.g));}else{toast('Saldo insuficiente');anim(t,[{transform:'none'},{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(-3px)'},{transform:'none'}],{duration:260});}return;}
-  if(a.send){if(ctx&&ctx.result&&!ctx.result.sent){ctx.result.sent=true;S.day.stickers++;save();toast('Has enviado «'+sById(a.send).name+'» a '+ctx.rival.name);showSheet();}return;}
+  if(a.send){if(ctx&&ctx.result&&!ctx.result.sent){ctx.result.sent=true;S.day.stickers++;S.stats.stk++;save();toast('Has enviado «'+sById(a.send).name+'» a '+ctx.rival.name);showSheet();}return;}
   if(a.replay){toast('Las repeticiones se verán en la app final');return;}
   if(a.avsel){pickAv(a.avsel);return;}
   if(a.ciOpen){circleModal(a.ciOpen);return;}
+  if(a.ciDaily){playDaily(a.ciDaily);return;}
+  if(a.ciDshare){shareDaily(a.ciDshare);return;}
   if(a.ciReto){circleRetoPicker(a.ciReto);return;}
   if(a.ciGame){var cid=pendingCircle&&pendingCircle.id;closeModal();launch(a.ciGame,'prac',STAKES[0],null,null,null,{forReto:true,forCircle:cid});return;}
   if(a.ciShare){var c3=circles()[a.ciShare];if(c3){circleMembersMe(c3);save();shareModal('Invita a «'+esc(c3.name)+'»','Te invito a mi círculo de rivales «'+c3.name+'» en MundiCash Juegos 🏆 Entra, únete y a ver quién manda:',circleLink(c3));}return;}
@@ -1513,6 +1587,7 @@ document.addEventListener('click',function(e){
     case 'hideSheet':$('sheet').hidden=true;break;
     case 'shareReto':sendReto();break;
     case 'shareResp':sendResp();break;
+    case 'shareDaily':if(ctx&&ctx.circleDaily)shareDaily(ctx.circleDaily);break;
     case 'shareNative':if(pendingShare&&navigator.share)navigator.share({text:pendingShare.text,url:pendingShare.url}).catch(function(){});break;
     case 'copyLink':if(pendingShare)copyText(pendingShare.text+'\n'+pendingShare.url);break;
     case 'saveAlias':saveAlias();break;
@@ -1532,6 +1607,7 @@ document.addEventListener('click',function(e){
       var c=ctx;
       if(c.mode==='copa')launch(c.game,'copa');
       else if(c.mode==='reto'){ctx={game:c.game,mode:'reto',stake:STAKES[0],rival:c.rival,fixed:c.fixed,seed:c.seed,retoKey:c.retoKey};mount();}
+      else if(c.circleDaily){ctx={game:c.game,mode:'prac',stake:STAKES[0],rival:c.rival,seed:c.seed,circleDaily:c.circleDaily,cday:c.cday};mount();}
       else if(c.mode==='prac'){ctx={game:c.game,mode:'prac',stake:STAKES[0],rival:c.rival,seed:newSeed()};mount();}
       else if(charge(c.stake)){ctx={game:c.game,mode:c.mode,stake:c.stake,rival:c.rival,fixed:null,seed:newSeed()};render();showVS(ctx,mount);}
       else toast('Saldo insuficiente');
@@ -1546,7 +1622,7 @@ document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(!$
 /* ======================= RUTAS ======================= */
 function route(){
   var h=location.hash.replace('#','');
-  var mm=/^(reto|resp|amigo|circulo)=(.+)$/.exec(h);
+  var mm=/^(reto|resp|amigo|circulo|cdia)=(.+)$/.exec(h);
   if(mm){pendingIncoming={k:mm[1],p:dec(mm[2])};if(history.replaceState){history.replaceState(null,'','#games');}else{location.replace('#games');return;}h='games';}
   if(GAMES[h]){if(skipRoute){skipRoute=false;if(current===h)return;}if(h!==current)open(h);return;}
   var fromGame=!!current;
