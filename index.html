@@ -608,9 +608,26 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function roll(){
   if(S.dayKey!==today()){S.dayKey=today();S.day={duels:0,wins:0,stickers:0};MIS.d.list.forEach(function(m){delete S.claimed[m.id];});}
   if(S.weekKey!==weekKey()){S.weekKey=weekKey();S.week={games:{},wins:0,rematch:0,top10:0};MIS.w.list.forEach(function(m){delete S.claimed[m.id];});}
-  if(S.seasonKey!==monthKey()){S.seasonKey=monthKey();S.season={wins:0};MIS.s.list.forEach(function(m){delete S.claimed[m.id];});}
-  if(S.copa.key!==today())S.copa={key:today(),best:{},tries:{},bots:{}};
+  if(S.seasonKey!==monthKey()){if(S.seasonKey&&booted!==null)paySeason(S.seasonKey);S.seasonKey=monthKey();S.season={wins:0};MIS.s.list.forEach(function(m){delete S.claimed[m.id];});}
+  if(S.copa.key!==today()){payCopa(S.copa);S.copa={key:today(),best:{},tries:{},bots:{}};}
 }
+
+var COPA_PRIZE=[1000,600,400,150,150,150,150,150,150,150];
+var SEASON_REW={Bronce:100,Plata:300,Oro:600,Platino:1000,Leyenda:2000};
+function copaPrizeTxt(p){return p&&p<=10?fmt(COPA_PRIZE[p-1])+' diamantes':'';}
+function payCopa(old){var items=[],tot=0;Object.keys(old.best||{}).forEach(function(g){if(!GAMES[g]||old.best[g]==null)return;var L=old.bots&&old.bots[g];if(!L)return;var n=1;L.forEach(function(x){if(x.s>old.best[g])n++;});if(n<=10){items.push({g:g,pos:n,gems:COPA_PRIZE[n-1]});tot+=COPA_PRIZE[n-1];}});
+  if(tot){S.gems+=tot;S.payNote=S.payNote||[];S.payNote.push({k:'copa',d:old.key,items:items,tot:tot});}}
+function paySeason(oldKey){var d=division(S.prestige),rw=SEASON_REW[d.tier]||0,i=0;for(var k=0;k<DIVS.length;k++)if(S.prestige>=DIVS[k][1])i=k;
+  var np=i>0?DIVS[i-1][1]:0;S.gems+=rw;S.seasonHist=S.seasonHist||[];S.seasonHist.unshift({k:oldKey,tier:d.tier,name:d.name});if(S.seasonHist.length>12)S.seasonHist.length=12;
+  S.payNote=S.payNote||[];S.payNote.push({k:'season',d:oldKey,tier:d.tier,name:d.name,gems:rw,from:S.prestige,to:np});S.prestige=np;}
+function monthName(k){var p=String(k).split('-');var M=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];return (M[(+p[1]||1)-1]||'')+' '+(p[0]||'');}
+function showPayNotes(){if(!S.payNote||!S.payNote.length||!$('modal').hidden||current)return;var N=S.payNote;S.payNote=[];save();
+  var h='<div style="display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center">';
+  N.forEach(function(n){
+    if(n.k==='copa'){h+=medal3('trofeo')+'<div class="t1">¡Premios de la copa!</div><div class="small">Resultado de las copas diarias de ayer</div><ul class="list" style="width:100%">'+n.items.map(function(x){return '<li class="hrow"><img src="'+IMG[x.g]+'" alt=""><span class="grow" style="text-align:left">'+GAMES[x.g].short+' · '+x.pos+'º</span><b style="color:var(--gold)">+'+fmt(x.gems)+' 💎</b></li>';}).join('')+'</ul>';}
+    else{h+=medal3('liga')+'<div class="t1">Fin de la temporada</div><div class="small">Acabaste '+monthName(n.d)+' en <b style="color:#fff">'+n.name+'</b></div><div class="chipr" style="color:var(--gold);font-size:16px">+'+fmt(n.gems)+' diamantes</div><div class="small">Nueva temporada: empiezas con '+fmt(n.to)+' de prestigio (un escalón por debajo). ¡A por ello!</div>';}
+  });
+  h+='<button class="cta full shine" type="button" data-act="closeModal">¡Genial!</button></div>';openModal(h,'Premios');}
 function addXP(n){S.xp+=n;while(S.xp>=3000){S.xp-=3000;S.level++;toast('¡Subes al nivel '+S.level+'!');}}
 var DIVS=[['Bronce',0],['Plata',600],['Oro',1200],['Platino',1800],['Leyenda',2400]];
 function division(p){var i=0;for(var k=0;k<DIVS.length;k++)if(p>=DIVS[k][1])i=k;if(i===DIVS.length-1)return {name:'Leyenda',tier:'Leyenda',next:null,left:0};var sub=['III','II','I'][Math.min(2,Math.floor((p-DIVS[i][1])/200))];return {name:DIVS[i][0]+' '+sub,tier:DIVS[i][0],next:DIVS[i+1][0],left:DIVS[i+1][1]-p,from:DIVS[i][1],to:DIVS[i+1][1]};}
@@ -755,16 +772,17 @@ function renderCompeticiones(){
     GKEYS.forEach(function(g){
       var tries=S.copa.tries[g]||0,pos=copaPos(g),can=tries<3&&S.gems>=COPA_FEE,isOpen=openCopa===g;
       h+='<div class="mc w'+(isOpen?' on':'')+'" style="flex-wrap:wrap">'+gmedal(g)+
-         '<div class="mid"><span class="mt"><b>Copa diaria · '+GAMES[g].short+'</b></span><span class="small" style="color:#E3E4FA">'+(pos?'Vas '+pos+'º de 50':'Aún sin intento')+' · '+tries+'/3 intentos</span>'+
+         '<div class="mid"><span class="mt"><b>Copa diaria · '+GAMES[g].short+'</b></span><span class="small" style="color:#E3E4FA">'+(pos?'Vas '+pos+'º de 50'+(pos<=10?' · <b style="color:var(--gold)">+'+copaPrizeTxt(pos)+'</b>':''):'Aún sin intento')+' · '+tries+'/3 intentos</span>'+
          '<button class="gbtn" type="button" data-copa-open="'+g+'" aria-expanded="'+isOpen+'" style="align-self:flex-start;height:32px;font-size:12px;background:rgba(0,0,0,.25)">'+(isOpen?'Ocultar tabla':'Ver tabla')+'</button></div>'+
-         '<div class="prz"><span class="v">$5,00</span><span class="l" style="font-size:12px">1.er premio</span>'+
+         '<div class="prz"><span class="v">'+gemIc()+'1.000</span><span class="l" style="font-size:12px">1.er premio</span>'+
          (tries>=3?'<button class="cta off" type="button" disabled>Hecho</button>':'<button class="cta'+(can?'':' off')+'" type="button" data-copa-play="'+g+'"'+(can?'':' aria-disabled="true"')+'>Jugar</button>')+'</div>'+
-         (isOpen?'<div style="flex-basis:100%">'+lbRows(g)+'<p class="note" style="margin-top:8px">Entrada '+fmt(COPA_FEE)+' diamantes por intento · cuenta tu mejor intento · top 10: $0,50 · se reparte a las 00:00</p></div>':'')+'</div>';
+         (isOpen?'<div style="flex-basis:100%">'+lbRows(g)+'<p class="note" style="margin-top:8px">Entrada '+fmt(COPA_FEE)+' diamantes por intento · cuenta tu mejor intento · premios en diamantes: 1.º 1.000 · 2.º 600 · 3.º 400 · 4.º-10.º 150 · se pagan a las 00:00 (al abrir la app al día siguiente). Rivales de práctica: hasta que haya ranking online, compites contra jugadores simulados de tu nivel.</p></div>':'')+'</div>';
     });
     var dv=division(S.prestige);
     h+='<div class="sec"><span>Torneo de temporada</span><span class="clk">'+ic('clock','#fff')+'<span data-clock="s">'+dur(secsTo(endMonth()))+'</span></span></div>';
-    h+='<div class="mc s">'+medal3('liga')+'<div class="mid"><span class="mt"><b>Liga '+dv.tier+'</b> · '+dv.name+'</span>'+(dv.next?bar(S.prestige-dv.from,dv.to-dv.from):'')+'<span class="small" style="color:#F3E3F3">'+(dv.next?'Te faltan '+fmt(dv.left)+' de prestigio para '+dv.next:'División máxima')+'</span></div>'+
-       '</div>';
+    h+='<div class="mc s">'+medal3('liga')+'<div class="mid"><span class="mt"><b>Liga '+dv.tier+'</b> · '+dv.name+'</span>'+(dv.next?bar(S.prestige-dv.from,dv.to-dv.from):'')+'<span class="small" style="color:#F3E3F3">'+(dv.next?'Te faltan '+fmt(dv.left)+' de prestigio para '+dv.next:'División máxima')+'</span><span class="small" style="color:#FFE08A">Recompensa a fin de mes: '+fmt(SEASON_REW[dv.tier])+' diamantes · después bajas un escalón</span></div>'+
+       '<div class="prz"><span class="v">'+gemIc()+fmt(SEASON_REW[dv.tier])+'</span><span class="l" style="font-size:12px">fin de mes</span></div></div>'+
+       '<div class="box alt" style="gap:6px"><b>Recompensas de temporada</b><div class="small">'+DIVS.map(function(x){return x[0]+': '+fmt(SEASON_REW[x[0]])+' 💎';}).join(' · ')+'</div></div>';
   } else {
     h+=realRankHtml();
   }
@@ -1911,11 +1929,12 @@ var HELP=[
  {id:'copa',ico:'trofeo',t:'Copa diaria',sub:'50 jugadores, un juego, un día',body:[
    ['🏟️','Cada día hay una copa por juego. Entrar cuesta <b>200 diamantes</b>.'],
    ['🎯','Tienes <b>3 intentos al día</b> por juego y cuenta tu mejor marca.'],
-   ['🥇','Si acabas en el <b>top 10</b>, hay premio. Se reparte a las 00:00.']]},
+   ['🥇','Si acabas en el <b>top 10</b>, ganas diamantes: 1.000 el primero, 600 el segundo, 400 el tercero y 150 del 4.º al 10.º. Se pagan a las 00:00 (los ves al abrir la app).'],
+   ['🤖','De momento compites contra <b>rivales de práctica</b> de tu nivel, hasta que haya ranking online.']]},
  {id:'ligas',ico:'liga',t:'Nivel y ligas',sub:'Lo que dice de ti tu perfil',body:[
    ['🆙','<b>Nivel:</b> subes con la XP que ganas jugando. Cada 3.000 XP, un nivel más.'],
    ['🛡️','<b>Liga:</b> va con el prestigio. Bronce → Plata (600) → Oro (1.200) → Platino (1.800) → Leyenda (2.400).'],
-   ['📅','Las temporadas duran un mes. Cada mes, nueva oportunidad para llegar a lo más alto.']]},
+   ['📅','Las temporadas duran un mes. Al acabar, ganas diamantes según tu liga (de 100 en Bronce a 2.000 en Leyenda) y bajas un escalón para volver a competir.']]},
  {id:'misiones',ico:'reloj',t:'Misiones y premio diario',sub:'Premios por pasarte a jugar',body:[
    ['✅','Hay misiones <b>diarias, semanales y de temporada</b>. Cuando completes una, pulsa <b>Recoger</b>.'],
    ['🎁','<b>Premio diario:</b> entra cada día y el premio va creciendo. El día 7 es el gordo: $1 y 300 diamantes.'],
@@ -2004,15 +2023,15 @@ function onbNext(){if(onbStep===1){var v=(($('onbAlias')||{}).value||'').trim().
   onbStep++;onbRender();}
 function onbFinish(play){S.onb=1;save();closeModal();render();if(play)setTimeout(function(){launch('suika','prac',STAKES[0]);},250);else toast('¡A jugar! Tienes la guía en el menú ☰ → Ayuda');}
 function maybeOnboarding(){if(S.onb)return;if(S.alias||pendingIncoming){S.onb=1;save();return;}onbOpen();}
-var drTries=0;
-function maybeDailyReward(){if(loginState().claimed)return;if(!$('modal').hidden||current||pendingIncoming){if(++drTries<40)setTimeout(maybeDailyReward,3000);return;}dailyRewardModal();}
+var drTries=0;var _payT=0;
+function maybeDailyReward(){if(S.payNote&&S.payNote.length){if(++_payT<40){showPayNotes();setTimeout(maybeDailyReward,3000);}return;}if(loginState().claimed)return;if(!$('modal').hidden||current||pendingIncoming){if(++drTries<40)setTimeout(maybeDailyReward,3000);return;}dailyRewardModal();}
 var booted=false;
 window.addEventListener('hashchange',route);
 setInterval(function(){
   var e={s:endMonth(),w:endWeek(),d:endDay()};
   document.querySelectorAll('[data-clock]').forEach(function(el){el.textContent=dur(secsTo(e[el.dataset.clock]));});
 },1000);
-load();skPreload();save();route();booted=true;maybeOnboarding();checkAch();setTimeout(maybeDailyReward,1200);
+load();skPreload();save();route();booted=true;maybeOnboarding();checkAch();setTimeout(showPayNotes,900);setTimeout(maybeDailyReward,1200);
 })();
 </script>
 
