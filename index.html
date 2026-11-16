@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MUNDICASUAL JUEGOS se ha mudado</title>
+<style>body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#05040f;color:#eaf6ff;font-family:Arial,sans-serif;text-align:center}a{color:#00f0ff}b{color:#ff2bd6}</style></head>
+<body><div><p><b>MUNDICASUAL JUEGOS</b> se ha mudado a</p><p><a id="go" href="https://kittgames.github.io/mundicash-juegos/">https://kittgames.github.io/mundicash-juegos/</a></p><p style="color:#9aa6c8;font-size:13px">Tu progreso viaja contigo…</p></div>
+<script>
+(function () {
+  var NEW = 'https://kittgames.github.io/mundicash-juegos/', hash = location.hash ? location.hash.slice(1) : '';
+  try {
+    var o = {}, n = 0, re = /^(mundicash\.|mc_|mc-auth)/;
+    for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (re.test(k)) { o[k] = localStorage.getItem(k); n++; } }
+    if (n) hash = (hash ? hash + '&' : '') + 'lsmove=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(o)))));
+  } catch (e) {}
+  var url = NEW + location.search + (hash ? '#' + hash : '');
+  document.getElementById('go').href = url;
+  location.replace(url);
+})();
+</script></body></html>
